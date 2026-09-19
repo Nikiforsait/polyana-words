@@ -1,0 +1,1665 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>Поляна слов</title>
+<link rel="manifest" href="manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-1:#e6f0eb; --bg-2:#ddeae4; --bg-3:#e2efe9; --bg-4:#eaf3ee;
+    --panel:#ffffff; --panel-glass:rgba(255,255,255,.88);
+    --border:#d4e4dc; --border-soft:#e2ece6;
+    --tile:#ffffff; --tile-tint:#f4faf6; --tile-edge:#caded4;
+    --tile-text:#2d4a3a;
+    --sel-bg-1:#c8e6d4; --sel-bg-2:#a8d4b8; --sel-edge:#7cba96;
+    --sel-text:#1e3a2a;
+    --mint-light:#9ed4b6; --mint-deep:#7cba96; --mint-dark:#4d8e6a; --mint-soft:#b8e0c8;
+    --ink:#2d4a3a; --ink-mid:#4d6a58; --ink-soft:#7a9684; --ink-mute:#a8c0b4;
+    --shadow-sm:0 2px 8px rgba(60,100,80,.08);
+    --shadow-md:0 6px 18px rgba(60,100,80,.10);
+    --shadow-lg:0 12px 32px rgba(60,100,80,.12);
+    --shadow-xl:0 24px 60px rgba(60,100,80,.16);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0;height:100%}
+  body{
+    font-family:'Nunito',system-ui,sans-serif;
+    background:linear-gradient(170deg,var(--bg-1) 0%,var(--bg-2) 40%,var(--bg-3) 70%,var(--bg-4) 100%);
+    color:var(--ink); min-height:100dvh;
+    display:flex; align-items:center; justify-content:center;
+    padding: max(env(safe-area-inset-top),12px) max(env(safe-area-inset-right),12px)
+             max(env(safe-area-inset-bottom),12px) max(env(safe-area-inset-left),12px);
+    user-select:none; -webkit-user-select:none; overflow-x:hidden;
+    position:relative;
+  }
+  body::before{
+    content:""; position:fixed; inset:0; pointer-events:none; z-index:0;
+    background-image:
+      linear-gradient(90deg, transparent 19.4%, rgba(124,186,150,.18) 20%, rgba(124,186,150,.18) 20.15%, transparent 20.75%,
+        transparent 39.4%, rgba(124,186,150,.18) 40%, rgba(124,186,150,.18) 40.15%, transparent 40.75%,
+        transparent 59.4%, rgba(124,186,150,.18) 60%, rgba(124,186,150,.18) 60.15%, transparent 60.75%,
+        transparent 79.4%, rgba(124,186,150,.18) 80%, rgba(124,186,150,.18) 80.15%, transparent 80.75%);
+  }
+  body::after{
+    content:""; position:fixed; inset:0; pointer-events:none; z-index:0;
+    background-image:
+      linear-gradient(180deg, transparent 19.4%, rgba(124,186,150,.18) 20%, rgba(124,186,150,.18) 20.15%, transparent 20.75%,
+        transparent 39.4%, rgba(124,186,150,.18) 40%, rgba(124,186,150,.18) 40.15%, transparent 40.75%,
+        transparent 59.4%, rgba(124,186,150,.18) 60%, rgba(124,186,150,.18) 60.15%, transparent 60.75%,
+        transparent 79.4%, rgba(124,186,150,.18) 80%, rgba(124,186,150,.18) 80.15%, transparent 80.75%);
+  }
+  .blob{position:fixed;border-radius:50%;pointer-events:none;z-index:0;filter:blur(90px);opacity:.4;animation:blobFloat 24s ease-in-out infinite alternate}
+  .blob.b1{width:340px;height:340px;background:#a8d4b8;top:-120px;left:-120px}
+  .blob.b2{width:380px;height:380px;background:#8cc9a8;bottom:-140px;right:-140px;animation-delay:-8s}
+  .blob.b3{width:220px;height:220px;background:#b8e0c8;top:50%;right:-80px;animation-delay:-14s;opacity:.3}
+  .blob.b4{width:260px;height:260px;background:#c9e2d5;bottom:10%;left:-100px;animation-delay:-4s;opacity:.35}
+  @keyframes blobFloat{from{transform:translate(0,0) scale(1)}to{transform:translate(30px,-25px) scale(1.08)}}
+  .dot-deco{position:fixed;border-radius:50%;pointer-events:none;z-index:0;background:radial-gradient(circle at 35% 35%, #fff, #c9e2d5 70%);box-shadow:0 2px 6px rgba(124,186,150,.25);opacity:.6;animation:dotDrift 18s ease-in-out infinite alternate}
+  .dot-deco.d1{width:14px;height:14px;top:12%;left:8%;animation-delay:-2s}
+  .dot-deco.d2{width:10px;height:10px;top:22%;right:10%;animation-delay:-6s;animation-duration:22s}
+  .dot-deco.d3{width:16px;height:16px;bottom:18%;left:12%;animation-delay:-9s;animation-duration:20s}
+  .dot-deco.d4{width:8px;height:8px;bottom:26%;right:8%;animation-delay:-13s;animation-duration:26s}
+  .dot-deco.d5{width:12px;height:12px;top:60%;left:5%;animation-delay:-4s;animation-duration:24s;opacity:.4}
+  .dot-deco.d6{width:6px;height:6px;top:35%;left:22%;animation-delay:-16s;animation-duration:28s;opacity:.5}
+  @keyframes dotDrift{from{transform:translate(0,0)}to{transform:translate(15px,-18px)}}
+  .petal{position:fixed;pointer-events:none;z-index:0;width:22px;height:22px;background:radial-gradient(ellipse at 30% 30%, #d3eedd, #a8d5ba 80%);border-radius:50% 0 50% 0;opacity:.35;filter:drop-shadow(0 2px 4px rgba(124,186,150,.2));animation:petalFloat 20s ease-in-out infinite}
+  .petal.p1{top:8%;left:20%;animation-delay:-3s;transform:rotate(45deg)}
+  .petal.p2{top:70%;right:15%;animation-delay:-11s;animation-duration:24s;transform:rotate(-30deg);width:18px;height:18px;opacity:.28}
+  .petal.p3{bottom:12%;left:35%;animation-delay:-7s;animation-duration:26s;transform:rotate(80deg);width:16px;height:16px;opacity:.3}
+  .petal.p4{top:30%;right:25%;animation-delay:-15s;animation-duration:22s;transform:rotate(-60deg);width:14px;height:14px;opacity:.25}
+  @keyframes petalFloat{0%,100%{transform:translate(0,0) rotate(0deg)}50%{transform:translate(-20px,-30px) rotate(40deg)}}
+  .ring{position:fixed;border-radius:50%;pointer-events:none;z-index:0;border:2px solid rgba(124,186,150,.18);opacity:.7;animation:ringPulse 14s ease-in-out infinite alternate}
+  .ring.r1{width:380px;height:380px;top:-140px;right:-120px}
+  .ring.r2{width:280px;height:280px;bottom:-100px;left:-90px;animation-delay:-5s;border-color:rgba(140,201,168,.22)}
+  .ring.r3{width:160px;height:160px;top:15%;left:8%;border-style:dashed;border-color:rgba(168,213,186,.28);animation-delay:-8s}
+  @keyframes ringPulse{from{transform:scale(1);opacity:.6}to{transform:scale(1.05);opacity:.85}}
+  .grass{position:fixed;bottom:-10px;left:-20px;right:-20px;height:140px;pointer-events:none;z-index:0;background:
+      radial-gradient(ellipse 100% 60% at 20% 100%, rgba(168,213,186,.35), transparent 70%),
+      radial-gradient(ellipse 90% 70% at 70% 100%, rgba(140,201,168,.28), transparent 70%),
+      radial-gradient(ellipse 80% 50% at 45% 100%, rgba(184,224,200,.32), transparent 70%);
+    filter:blur(2px);}
+
+  .game{width:90vw;max-width:640px;display:flex;flex-direction:column;gap:10px;position:relative;z-index:2}
+  .screen{width:88vw;max-width:600px;display:flex;flex-direction:column;gap:18px;position:relative;z-index:2}
+
+  .hud{background:var(--panel-glass);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid var(--border);border-radius:22px;padding:10px 14px;display:flex;align-items:center;gap:8px;box-shadow:var(--shadow-md)}
+  .timer{position:relative;width:60px;height:60px;flex-shrink:0}
+  .timer svg{width:100%;height:100%;transform:rotate(-90deg);overflow:visible}
+  .timer .ring-bg{fill:none;stroke:var(--border-soft);stroke-width:5.5}
+  .timer .ring-fill{fill:none;stroke:var(--mint-deep);stroke-width:5.5;stroke-linecap:round;stroke-dasharray:157;stroke-dashoffset:0;transition:stroke-dashoffset .35s linear}
+  .timer-num{position:absolute;inset:0;display:grid;place-items:center;font-size:19px;font-weight:900;color:var(--mint-dark);font-variant-numeric:tabular-nums}
+  .stat{display:flex;flex-direction:column;align-items:center;gap:2px;min-width:60px}
+  .stat-num{font-size:24px;font-weight:900;color:var(--ink);line-height:1;font-variant-numeric:tabular-nums}
+  .stat.score .stat-num{color:var(--mint-dark)}
+  .stat.words .stat-num{color:var(--mint-deep)}
+  .stat-lbl{font-size:9px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-mute)}
+  .hud-spacer{flex:1}
+  .icon-btn-hud{width:46px;height:46px;border-radius:50%;background:var(--panel);border:1.5px solid var(--border);display:grid;place-items:center;font-size:18px;cursor:pointer;color:var(--mint-dark);box-shadow:var(--shadow-sm);transition:transform .15s,background .2s;flex-shrink:0}
+  .icon-btn-hud:hover{background:var(--tile-tint)}
+  .icon-btn-hud:active{transform:scale(.92)}
+  .icon-btn-hud.off{color:var(--ink-mute)}
+
+  .board-panel{background:var(--panel);border:1px solid var(--border);border-radius:20px;padding:6px;box-shadow:var(--shadow-lg)}
+  .grid{display:grid;grid-template-columns:repeat(6,1fr);gap:2px;background:var(--tile-edge);border-radius:14px;overflow:hidden;touch-action:none;user-select:none}
+  .cell{aspect-ratio:1/1;container-type:inline-size;display:grid;place-items:center;font-weight:700;border-radius:0;cursor:pointer;background:var(--tile);color:var(--tile-text);position:relative;overflow:hidden;text-transform:uppercase;transition:background .18s,color .18s}
+  .cell:nth-child(1){border-top-left-radius:14px}
+  .cell:nth-child(6){border-top-right-radius:14px}
+  .cell:nth-child(31){border-bottom-left-radius:14px}
+  .cell:nth-child(36){border-bottom-right-radius:14px}
+  .cell .letter{font-size:40cqw;line-height:1;display:block;font-family:'Nunito',sans-serif;font-weight:700}
+  .cell::before{content:"";position:absolute;top:0;left:0;right:0;height:45%;background:linear-gradient(180deg, rgba(255,255,255,.7), transparent);pointer-events:none}
+  @media (hover:hover){.cell:hover:not(.sel):not(.ok):not(.shake){background:var(--tile-tint)}}
+  .cell:active:not(.sel){background:#eef5f1}
+  .cell.sel{background:linear-gradient(180deg,var(--sel-bg-1),var(--sel-bg-2));color:var(--sel-text);box-shadow:inset 0 0 0 2px var(--sel-edge);z-index:1}
+  .cell.ok{background:linear-gradient(180deg,var(--mint-soft),#8cc9a8);color:#fff;box-shadow:inset 0 0 0 2px var(--mint-dark)}
+  .cell.shake{background:#ffe4e4;color:#8a3a3a;box-shadow:inset 0 0 0 2px #e8a0a0;animation:shakeAnim .4s cubic-bezier(.36,.07,.19,.97)}
+  @keyframes shakeAnim{10%,90%{transform:translateX(-2px)}20%,80%{transform:translateX(3px)}30%,50%,70%{transform:translateX(-4px)}40%,60%{transform:translateX(4px)}}
+
+  .word-display{background:var(--panel-glass);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1.5px solid var(--border);border-radius:16px;min-height:56px;padding:12px 20px;display:flex;align-items:center;justify-content:center;font-family:'Nunito',sans-serif;font-weight:800;font-size:22px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink);box-shadow:var(--shadow-sm);transition:color .2s}
+  .word-display.empty{color:var(--ink-mute);font-size:14px;font-weight:700;font-style:italic;letter-spacing:.02em;text-transform:none;border-style:dashed;border-color:var(--border-soft)}
+
+  .toast{position:fixed;left:50%;top:14%;transform:translate(-50%,-20px);padding:12px 24px;border-radius:99px;font-weight:800;font-size:16px;color:#fff;opacity:0;pointer-events:none;transition:opacity .2s,transform .3s cubic-bezier(.34,1.5,.64,1);z-index:99;white-space:nowrap;max-width:90vw;text-shadow:0 1px 0 rgba(0,0,0,.15);display:flex;align-items:center;gap:8px}
+  .toast.show{opacity:1;transform:translate(-50%,0)}
+  .toast.good{background:linear-gradient(180deg,var(--mint-light),var(--mint-deep));box-shadow:0 8px 20px rgba(124,186,150,.5)}
+  .toast.bad{background:linear-gradient(180deg,#f4b8b8,#e08a8a);box-shadow:0 8px 20px rgba(224,138,138,.5)}
+  .toast.warn{background:linear-gradient(180deg,#f4d4a0,#e0b878);box-shadow:0 8px 20px rgba(224,184,120,.5);color:#5a3d10;text-shadow:none}
+
+  .screen-card{background:linear-gradient(160deg, rgba(255,255,255,.94) 0%, rgba(252,254,253,.9) 100%);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border:1px solid rgba(212,228,220,.9);border-radius:36px;padding:38px 34px 34px;box-shadow:0 1px 0 rgba(255,255,255,.9) inset,0 -1px 0 rgba(200,225,212,.3) inset,0 30px 70px rgba(60,100,80,.16),0 6px 20px rgba(60,100,80,.08);animation:cardIn .5s cubic-bezier(.34,1.4,.64,1);position:relative;overflow:hidden}
+  .screen-card::before{content:"";position:absolute;top:-80px;right:-80px;width:220px;height:220px;background:radial-gradient(circle, rgba(168,213,186,.35), transparent 65%);pointer-events:none;border-radius:50%}
+  .screen-card::after{content:"";position:absolute;bottom:-60px;left:-60px;width:180px;height:180px;background:radial-gradient(circle, rgba(184,224,200,.28), transparent 65%);pointer-events:none;border-radius:50%}
+  @keyframes cardIn{from{opacity:0;transform:translateY(24px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
+
+  .profile{display:flex;align-items:center;gap:16px;padding-bottom:20px;margin-bottom:26px;border-bottom:1px solid var(--border-soft);position:relative;z-index:1}
+  .avatar{width:68px;height:68px;border-radius:50%;background:linear-gradient(160deg,#b8e0c8,#7cba96);display:grid;place-items:center;font-size:30px;font-weight:900;color:#fff;box-shadow:0 4px 0 var(--mint-dark),0 8px 20px rgba(124,186,150,.4),inset 0 1px 0 rgba(255,255,255,.4);flex-shrink:0;position:relative}
+  .avatar::before{content:"";position:absolute;top:5px;left:50%;transform:translateX(-50%);width:60%;height:24%;border-radius:50%;background:linear-gradient(180deg, rgba(255,255,255,.55), transparent);pointer-events:none}
+  .profile-info{display:flex;flex-direction:column;gap:4px;flex:1;min-width:0}
+  .profile-name{font-size:19px;font-weight:900;color:var(--ink);letter-spacing:-.01em}
+  .profile-league{font-size:13.5px;font-weight:700;color:var(--ink-soft);display:flex;align-items:center;gap:6px}
+  .icon-row{display:flex;gap:10px}
+  .icon-btn{width:52px;height:52px;border-radius:50%;background:var(--panel);border:1.5px solid var(--border);display:grid;place-items:center;font-size:20px;cursor:pointer;box-shadow:var(--shadow-sm);transition:transform .15s,background .2s,box-shadow .15s;flex-shrink:0;color:var(--mint-dark)}
+  .icon-btn:hover{background:var(--tile-tint);transform:translateY(-2px);box-shadow:var(--shadow-md)}
+  .icon-btn:active{transform:scale(.92)}
+  .icon-btn.off{color:var(--ink-mute)}
+
+  .screen-title{font-size:38px;font-weight:900;text-align:center;color:var(--ink);margin:0 0 10px;letter-spacing:-.02em;position:relative;z-index:1}
+  .screen-sub{text-align:center;color:var(--ink-soft);font-size:15.5px;font-weight:700;margin:0 0 28px;line-height:1.5;position:relative;z-index:1}
+
+  .play-btn{width:100%;height:82px;border:none;border-radius:24px;font-family:'Nunito',sans-serif;font-weight:900;font-size:23px;color:#fff;cursor:pointer;letter-spacing:.06em;background:linear-gradient(180deg,#a8d8bc,#7cba96);box-shadow:0 6px 0 var(--mint-dark),0 14px 30px rgba(124,186,150,.5),inset 0 1px 0 rgba(255,255,255,.4),inset 0 -3px 0 rgba(40,80,55,.15);text-shadow:0 1px 0 rgba(40,80,55,.25);transition:transform .12s,box-shadow .16s,filter .15s;display:flex;align-items:center;justify-content:center;gap:14px;text-transform:uppercase;position:relative;z-index:1}
+  .play-btn:hover{filter:brightness(1.04)}
+  .play-btn:active{transform:translateY(6px);box-shadow:0 0 0 var(--mint-dark),0 4px 12px rgba(124,186,150,.4),inset 0 1px 0 rgba(255,255,255,.4)}
+  .play-btn .icon{font-size:28px;line-height:1}
+  .play-btn.loading{cursor:default;filter:grayscale(.45) brightness(.98);opacity:.85}
+  .play-btn.loading:active{transform:none;box-shadow:0 6px 0 var(--mint-dark),0 14px 30px rgba(124,186,150,.5),inset 0 1px 0 rgba(255,255,255,.4),inset 0 -3px 0 rgba(40,80,55,.15)}
+
+  .leagues-btn{width:100%;height:68px;margin-top:14px;border:1.5px solid var(--border);border-radius:24px;font-family:'Nunito',sans-serif;font-weight:800;font-size:17.5px;color:var(--mint-dark);background:var(--panel);cursor:pointer;box-shadow:0 4px 0 var(--border-soft),0 8px 16px rgba(60,100,80,.06);transition:transform .12s,box-shadow .16s,background .2s;display:flex;align-items:center;justify-content:center;gap:12px;position:relative;z-index:1}
+  .leagues-btn:hover{background:var(--tile-tint)}
+  .leagues-btn:active{transform:translateY(4px);box-shadow:0 0 0 var(--border-soft),0 2px 6px rgba(60,100,80,.06)}
+  .leagues-btn .icon{font-size:22px;line-height:1}
+
+  .btn-primary{width:100%;height:62px;border:none;border-radius:20px;font-family:'Nunito',sans-serif;font-weight:900;font-size:17px;color:#fff;cursor:pointer;letter-spacing:.02em;background:linear-gradient(180deg,var(--mint-light),var(--mint-deep));box-shadow:0 5px 0 var(--mint-dark),0 10px 24px rgba(124,186,150,.45);text-shadow:0 1px 0 rgba(40,80,55,.25);transition:transform .12s,box-shadow .16s,filter .15s;display:flex;align-items:center;justify-content:center;gap:10px;text-transform:uppercase;position:relative;z-index:1}
+  .btn-primary:hover{filter:brightness(1.04)}
+  .btn-primary:active{transform:translateY(5px);box-shadow:0 0 0 var(--mint-dark),0 2px 8px rgba(124,186,150,.4)}
+  .btn-primary .icon{font-size:20px;line-height:1}
+
+  .btn-row{display:flex;gap:10px;margin-top:10px;position:relative;z-index:1}
+  .btn-row .btn-secondary{flex:1;margin-top:0}
+  .btn-secondary{width:100%;height:54px;border:1.5px solid var(--border);border-radius:18px;font-family:'Nunito',sans-serif;font-weight:800;font-size:14px;color:var(--mint-dark);background:var(--panel);cursor:pointer;box-shadow:0 3px 0 var(--border-soft);transition:transform .12s,box-shadow .16s,background .2s;display:flex;align-items:center;justify-content:center;gap:8px}
+  .btn-secondary:hover{background:var(--tile-tint)}
+  .btn-secondary:active{transform:translateY(3px);box-shadow:0 0 0 var(--border-soft)}
+  .btn-secondary .icon{font-size:17px;line-height:1}
+
+  .big-score{font-size:72px;font-weight:900;text-align:center;line-height:1;color:var(--mint-dark);margin:10px 0 6px;letter-spacing:-.02em;position:relative;z-index:1}
+  .score-label{text-align:center;font-size:13px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-mute);margin-bottom:22px;position:relative;z-index:1}
+  .word-group{margin-top:18px;position:relative;z-index:1}
+  .word-group h3{font-size:11.5px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft);margin:0 0 10px}
+  .word-list{display:flex;flex-wrap:wrap;gap:6px}
+  .word-chip{padding:5px 13px;border-radius:99px;background:rgba(184,224,200,.5);border:1.5px solid rgba(124,186,150,.35);color:var(--mint-dark);font-size:12.5px;font-weight:800;letter-spacing:.03em;text-transform:uppercase}
+  .word-chip.missed{background:rgba(212,228,220,.35);border-color:var(--border);color:var(--ink-soft)}
+
+  .rules-box{background:rgba(184,224,200,.28);border:1px dashed #8cc9a8;border-radius:16px;padding:16px 18px;font-size:14px;font-weight:700;line-height:1.95;color:var(--ink-mid);margin-bottom:22px;text-align:left;position:relative;z-index:1}
+  .rules-box b{color:var(--mint-dark)}
+
+  .leagues-header{display:flex;align-items:center;gap:12px;margin-bottom:20px;position:relative;z-index:1}
+  .back-btn{width:46px;height:46px;border-radius:50%;background:var(--panel);border:1.5px solid var(--border);display:grid;place-items:center;font-size:19px;cursor:pointer;color:var(--ink-soft);box-shadow:var(--shadow-sm);transition:transform .15s,background .2s;flex-shrink:0}
+  .back-btn:hover{background:var(--tile-tint)}
+  .back-btn:active{transform:scale(.92)}
+  .leagues-title{font-size:24px;font-weight:900;color:var(--ink);margin:0;flex:1}
+
+  .current-league{background:linear-gradient(135deg, rgba(184,224,200,.4), rgba(154,204,176,.25));border:1.5px solid #8cc9a8;border-radius:22px;padding:18px 20px;display:flex;align-items:center;gap:14px;margin-bottom:20px;position:relative;z-index:1}
+  .league-emoji{width:56px;height:56px;border-radius:50%;background:linear-gradient(180deg,var(--mint-light),var(--mint-deep));display:grid;place-items:center;font-size:28px;box-shadow:0 3px 0 var(--mint-dark),0 6px 14px rgba(124,186,150,.35);flex-shrink:0}
+  .league-info{flex:1;min-width:0}
+  .league-name{font-size:18px;font-weight:900;color:var(--ink);margin:0 0 3px}
+  .league-sub{font-size:12.5px;font-weight:700;color:var(--ink-soft)}
+
+  .table-title{font-size:11.5px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft);margin:18px 0 10px;position:relative;z-index:1}
+  .league-table{position:relative;height:calc(9 * 58px);margin-bottom:6px;z-index:1}
+  .league-row{position:absolute;left:0;right:0;height:52px;display:flex;align-items:center;gap:12px;background:var(--panel);border:1.5px solid var(--border-soft);border-radius:16px;padding:0 14px;transition:transform 1.2s cubic-bezier(.5,.05,.3,1),background .3s,border-color .3s;will-change:transform}
+  .league-row.me{background:linear-gradient(135deg, rgba(184,224,200,.55), rgba(154,204,176,.35));border-color:#8cc9a8;box-shadow:0 3px 0 rgba(124,186,150,.25)}
+  .league-pos{width:26px;font-size:14.5px;font-weight:900;color:var(--ink-mute);text-align:center;flex-shrink:0}
+  .league-row.me .league-pos{color:var(--mint-dark)}
+  .league-avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(180deg,#dbe9e2,#b8d0c0);display:grid;place-items:center;font-size:14px;font-weight:900;color:#fff;flex-shrink:0}
+  .league-row.me .league-avatar{background:linear-gradient(180deg,var(--mint-light),var(--mint-deep))}
+  .league-who{flex:1;font-size:14.5px;font-weight:800;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+  .league-row.me .league-who{color:var(--mint-dark)}
+  .league-score{font-size:14px;font-weight:900;color:var(--ink-soft);font-variant-numeric:tabular-nums;flex-shrink:0}
+  .league-row.me .league-score{color:var(--mint-dark)}
+
+  .overlay{position:fixed;inset:0;z-index:50;background:rgba(30,58,42,.4);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;padding:16px}
+  .overlay.show{display:flex}
+  .modal{width:80vw;max-width:440px;background:var(--panel);border-radius:28px;padding:28px 26px;box-shadow:var(--shadow-xl);animation:modalIn .35s cubic-bezier(.34,1.4,.64,1)}
+  @keyframes modalIn{from{opacity:0;transform:scale(.92) translateY(20px)}to{opacity:1;transform:scale(1) translateY(0)}}
+  .modal-title{font-size:24px;font-weight:900;color:var(--ink);margin:0 0 20px;text-align:center}
+
+  .settings-panel{width:100%;max-width:640px;background:var(--panel);border-radius:32px 32px 0 0;padding:26px 24px max(env(safe-area-inset-bottom),24px);box-shadow:0 -12px 40px rgba(60,100,80,.25);animation:slideUp .35s cubic-bezier(.34,1.4,.64,1)}
+  @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+  .settings-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px}
+  .settings-title{font-size:22px;font-weight:900;color:var(--ink);margin:0}
+  .close-btn{width:40px;height:40px;border-radius:50%;background:var(--tile-tint);border:1.5px solid var(--border);font-size:18px;cursor:pointer;color:var(--ink-soft);display:grid;place-items:center;transition:transform .15s,background .2s}
+  .close-btn:hover{background:var(--border-soft)}
+  .close-btn:active{transform:scale(.9)}
+  .lang-group{display:flex;flex-direction:column;gap:10px}
+  .lang-label{font-size:12px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:4px}
+  .lang-option{display:flex;align-items:center;gap:14px;padding:16px 18px;background:var(--panel);border:1.5px solid var(--border);border-radius:16px;cursor:pointer;transition:all .18s ease}
+  .lang-option:hover{background:var(--tile-tint);border-color:#8cc9a8}
+  .lang-option.active{background:linear-gradient(135deg, rgba(184,224,200,.55), rgba(154,204,176,.35));border-color:var(--mint-dark);box-shadow:0 3px 0 rgba(124,186,150,.3)}
+  .lang-flag{font-size:26px;line-height:1;flex-shrink:0}
+  .lang-text{flex:1;display:flex;flex-direction:column;gap:2px;min-width:0}
+  .lang-native{font-size:16px;font-weight:800;color:var(--ink);font-family:'Nunito',sans-serif}
+  .lang-code{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-mute)}
+  .lang-check{width:24px;height:24px;border-radius:50%;border:2px solid var(--border);display:grid;place-items:center;flex-shrink:0;transition:all .18s ease}
+  .lang-option.active .lang-check{background:var(--mint-deep);border-color:var(--mint-deep);color:#fff}
+  .lang-check::before{content:"✓";font-size:14px;font-weight:900;opacity:0;transition:opacity .18s}
+  .lang-option.active .lang-check::before{opacity:1}
+  .lang-option.active .lang-native{color:var(--mint-dark)}
+
+  .loading-note{text-align:center;font-size:12.5px;font-weight:700;color:var(--ink-soft);margin-top:14px;position:relative;z-index:1}
+  .spinner{display:inline-block;width:14px;height:14px;border:2.5px solid rgba(124,186,150,.25);border-top-color:var(--mint-deep);border-radius:50%;animation:spin .8s linear infinite;vertical-align:-2px;margin-right:6px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  @media (max-width:520px){ .screen{width:92vw;max-width:100%} }
+  @media (max-width:420px){
+    .screen{width:94vw}
+    .screen-card{padding:30px 24px 26px;border-radius:28px}
+    .screen-title{font-size:30px}
+    .screen-sub{font-size:13.5px;margin-bottom:22px}
+    .play-btn{height:72px;font-size:19px;border-radius:22px}
+    .leagues-btn{height:60px;font-size:15.5px;border-radius:22px}
+    .avatar{width:60px;height:60px;font-size:26px}
+    .profile-name{font-size:17px}
+    .profile-league{font-size:12.5px}
+    .icon-btn{width:46px;height:46px;font-size:18px}
+    .hud{padding:9px 12px;border-radius:18px;gap:6px}
+    .timer{width:52px;height:52px}
+    .timer-num{font-size:16px}
+    .stat-num{font-size:21px}
+    .stat{min-width:50px}
+    .stat-lbl{font-size:8px}
+    .icon-btn-hud{width:42px;height:42px;font-size:16px}
+    .word-display{min-height:50px;font-size:20px;padding:10px 16px;border-radius:14px}
+    .big-score{font-size:58px}
+    .btn-primary{height:56px;font-size:16px}
+    .btn-secondary{height:50px;font-size:13px}
+    .rules-box{font-size:13px;padding:14px 16px}
+    .modal{width:88vw;padding:24px 22px}
+    .lang-option{padding:14px 16px;gap:12px}
+    .lang-flag{font-size:22px}
+    .lang-native{font-size:15px}
+  }
+  @media (max-height:720px){
+    .game{gap:8px}
+    .word-display{min-height:46px;font-size:18px}
+    .hud{padding:8px 12px}
+    .timer{width:50px;height:50px}
+    .play-btn{height:68px}
+    .leagues-btn{height:58px}
+    .screen-card{padding:26px 22px 22px}
+    .screen-sub{margin-bottom:20px}
+  }
+</style>
+</head>
+<body>
+
+<div class="blob b1"></div>
+<div class="blob b2"></div>
+<div class="blob b3"></div>
+<div class="blob b4"></div>
+<div class="ring r1"></div>
+<div class="ring r2"></div>
+<div class="ring r3"></div>
+<div class="dot-deco d1"></div>
+<div class="dot-deco d2"></div>
+<div class="dot-deco d3"></div>
+<div class="dot-deco d4"></div>
+<div class="dot-deco d5"></div>
+<div class="dot-deco d6"></div>
+<div class="petal p1"></div>
+<div class="petal p2"></div>
+<div class="petal p3"></div>
+<div class="petal p4"></div>
+<div class="grass"></div>
+
+<div id="app"></div>
+<div id="toast" class="toast"></div>
+<div class="overlay" id="overlay"></div>
+
+<script>
+/* =========================================================
+   ЗВУК
+   ========================================================= */
+let audioCtx = null;
+let masterGain = null;
+let reverbSend = null;
+
+const P = {
+  C4: 261.63, D4: 293.66, E4: 329.63, G4: 392.00, A4: 440.00,
+  C5: 523.25, D5: 587.33, E5: 659.25, G5: 783.99, A5: 880.00,
+  C6: 1046.50, D6: 1174.66, E6: 1318.51
+};
+
+function initAudio() {
+  if (audioCtx) return;
+  try {
+    const Ctx = window.AudioContext || window.webkitAudioContext;
+    if (!Ctx) return;
+    audioCtx = new Ctx();
+    masterGain = audioCtx.createGain();
+    masterGain.gain.value = 0.11;
+    const masterFilter = audioCtx.createBiquadFilter();
+    masterFilter.type = 'lowpass';
+    masterFilter.frequency.value = 2400;
+    masterFilter.Q.value = 0.6;
+    const shelf = audioCtx.createBiquadFilter();
+    shelf.type = 'highshelf';
+    shelf.frequency.value = 3500;
+    shelf.gain.value = -8;
+    masterFilter.connect(shelf);
+    shelf.connect(masterGain);
+    masterGain.connect(audioCtx.destination);
+
+    reverbSend = audioCtx.createGain();
+    reverbSend.gain.value = 0.35;
+    const delay1 = audioCtx.createDelay(); delay1.delayTime.value = 0.19;
+    const delay2 = audioCtx.createDelay(); delay2.delayTime.value = 0.37;
+    const fb1 = audioCtx.createGain(); fb1.gain.value = 0.32;
+    const fb2 = audioCtx.createGain(); fb2.gain.value = 0.22;
+    const fbFilter = audioCtx.createBiquadFilter();
+    fbFilter.type = 'lowpass'; fbFilter.frequency.value = 1200;
+    reverbSend.connect(delay1); reverbSend.connect(delay2);
+    delay1.connect(fbFilter); delay2.connect(fbFilter);
+    fbFilter.connect(fb1); fbFilter.connect(fb2);
+    fb1.connect(delay1); fb2.connect(delay2);
+    delay1.connect(masterFilter); delay2.connect(masterFilter);
+  } catch(_) { audioCtx = null; }
+}
+
+function resumeAudio() {
+  if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume().catch(() => {});
+}
+
+function playBell({ freq, dur = 1.1, vol = 0.5, delay = 0, bright = 0.12, pan = 0 }) {
+  if (!soundEnabled || !audioCtx) return;
+  const t0 = audioCtx.currentTime + delay;
+  const out = audioCtx.createGain(); out.gain.value = 1;
+  if (audioCtx.createStereoPanner) {
+    const panner = audioCtx.createStereoPanner();
+    panner.pan.value = pan;
+    out.connect(panner); panner.connect(masterGain); panner.connect(reverbSend);
+  } else { out.connect(masterGain); out.connect(reverbSend); }
+  const env = audioCtx.createGain();
+  env.gain.setValueAtTime(0.0001, t0);
+  env.gain.linearRampToValueAtTime(vol, t0 + 0.04);
+  env.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+  env.connect(out);
+  const osc1 = audioCtx.createOscillator();
+  osc1.type = 'sine';
+  osc1.frequency.setValueAtTime(freq, t0);
+  osc1.frequency.exponentialRampToValueAtTime(freq * 0.995, t0 + dur);
+  osc1.connect(env); osc1.start(t0); osc1.stop(t0 + dur + 0.05);
+  if (bright > 0) {
+    const osc2 = audioCtx.createOscillator();
+    osc2.type = 'sine';
+    osc2.frequency.setValueAtTime(freq * 2, t0);
+    osc2.detune.setValueAtTime(3, t0);
+    const env2 = audioCtx.createGain();
+    env2.gain.setValueAtTime(0.0001, t0);
+    env2.gain.linearRampToValueAtTime(vol * bright, t0 + 0.03);
+    env2.gain.exponentialRampToValueAtTime(0.0001, t0 + dur * 0.7);
+    osc2.connect(env2); env2.connect(out);
+    osc2.start(t0); osc2.stop(t0 + dur * 0.8 + 0.05);
+  }
+}
+
+const sfx = {
+  tap: () => playBell({ freq: P.E5, dur: 0.55, vol: 0.32, bright: 0.10, pan: -0.15 }),
+  untap: () => playBell({ freq: P.G4, dur: 0.45, vol: 0.24, bright: 0.08, pan: 0.15 }),
+  success: () => {
+    playBell({ freq: P.C5, dur: 1.0, vol: 0.42, bright: 0.20, delay: 0.00, pan: -0.2 });
+    playBell({ freq: P.E5, dur: 1.0, vol: 0.40, bright: 0.20, delay: 0.10, pan: 0.0 });
+    playBell({ freq: P.G5, dur: 1.2, vol: 0.38, bright: 0.22, delay: 0.20, pan: 0.2 });
+    playBell({ freq: P.C6, dur: 1.6, vol: 0.30, bright: 0.25, delay: 0.34, pan: 0.0 });
+  },
+  error: () => {
+    playBell({ freq: P.A4, dur: 0.55, vol: 0.30, bright: 0.05, pan: -0.1 });
+    playBell({ freq: P.E4, dur: 0.85, vol: 0.26, bright: 0.05, delay: 0.14, pan: 0.1 });
+  },
+  already: () => {
+    playBell({ freq: P.D5, dur: 0.55, vol: 0.28, bright: 0.10, delay: 0.00 });
+    playBell({ freq: P.D5, dur: 0.65, vol: 0.22, bright: 0.10, delay: 0.18 });
+  },
+  tick: () => playBell({ freq: P.C6, dur: 0.35, vol: 0.14, bright: 0.05 }),
+  promotion: () => {
+    playBell({ freq: P.C5, dur: 0.9, vol: 0.38, bright: 0.18, delay: 0.00, pan: -0.3 });
+    playBell({ freq: P.D5, dur: 0.9, vol: 0.38, bright: 0.18, delay: 0.12, pan: -0.1 });
+    playBell({ freq: P.E5, dur: 1.0, vol: 0.38, bright: 0.20, delay: 0.24, pan: 0.1 });
+    playBell({ freq: P.G5, dur: 1.1, vol: 0.36, bright: 0.22, delay: 0.36, pan: 0.2 });
+    playBell({ freq: P.A5, dur: 1.3, vol: 0.34, bright: 0.22, delay: 0.48, pan: 0.0 });
+    playBell({ freq: P.C6, dur: 2.0, vol: 0.32, bright: 0.25, delay: 0.62, pan: 0.0 });
+  },
+  gameEnd: () => {
+    playBell({ freq: P.A4, dur: 1.4, vol: 0.35, bright: 0.15, delay: 0.00, pan: -0.2 });
+    playBell({ freq: P.G4, dur: 1.6, vol: 0.32, bright: 0.15, delay: 0.22, pan: 0.2 });
+    playBell({ freq: P.E4, dur: 1.8, vol: 0.30, bright: 0.12, delay: 0.48, pan: -0.1 });
+    playBell({ freq: P.C4, dur: 2.4, vol: 0.28, bright: 0.10, delay: 0.76, pan: 0.1 });
+  },
+  gameStart: () => {
+    playBell({ freq: P.C5, dur: 0.9, vol: 0.34, bright: 0.15, delay: 0.00, pan: -0.1 });
+    playBell({ freq: P.G5, dur: 1.4, vol: 0.32, bright: 0.18, delay: 0.18, pan: 0.1 });
+  },
+};
+
+/* =========================================================
+   ЛОКАЛИЗАЦИЯ
+   ========================================================= */
+const I18N = {
+  ru: {
+    uiTitle: '🌼 Поляна слов',
+    playBtn: 'Играть',
+    leaguesBtn: 'Лиги',
+    settingsBtn: 'Настройки',
+    dictLangLabel: 'Язык словаря',
+    loadingDictBtn: 'Загрузка словаря…',
+    loadingNote: '<span class="spinner"></span>Подключаем словарь…',
+    dictReadyNote: 'Словарь: {n} слов',
+    player: 'Игрок',
+    subtitle: 'Собери как можно больше слов за 60 секунд<br>на поле минимум {n} слов',
+    leaguesTitle: 'Лиги',
+    participants: 'Участники',
+    you: 'Вы',
+    points: 'очки',
+    ofN: 'из {n}',
+    connectHint: 'Соедини буквы в слово!',
+    pause: 'Пауза',
+    rules: '🌿 Соедини <b>соседние</b> буквы — по горизонтали, вертикали и диагонали<br>✋ Зажми и веди палец или мышь по буквам<br>✏️ Каждую клетку в слове используй <b>один раз</b><br>📖 Слово проверяется по словарю, когда ты <b>отпустишь</b> палец<br>🌼 На поле всегда не меньше <b>{n} слов</b><br>⭐ Очки: 3 буквы — 1, 4 — 2, 5 — 3, 6 — 4',
+    continueBtn: 'Продолжить',
+    homeBtn: 'На главную',
+    timeUp: 'Время вышло!',
+    scoreLabel: 'очков · найдено {f} из {t}',
+    totalScoreLabel: 'Всего очков: {n}',
+    foundWords: 'Найденные слова',
+    missedWords: 'Оставались на поле ({n})',
+    noWords: 'Ни одного слова :(',
+    allFound: 'Все слова найдены! 🎉',
+    playAgain: 'Играть снова',
+    alreadyFound: 'Уже найдено',
+    noSuchWord: 'Нет такого слова',
+    rivalPassed: '⚡ {name} обогнал вас!',
+    promoted: '🏆 Вы перешли в {league}!',
+    scoreToNext: '{s} / {m} очков до «{n}»',
+    maxLeague: '{s} очков — максимальная лига!',
+    leagues: ['Мятная лига', 'Лавендовая лига', 'Персиковая лига', 'Пудровая лига', 'Розовая лига'],
+    botNames: ['Аня','Макс','Лена','Дима','Оля','Костя','Катя','Ваня','Настя','Серёжа','Маша','Петя','Юля','Саша','Таня','Гоша','Полина','Влад','Ира','Кирилл','Соня','Артём','Даша','Никита']
+  },
+  en: {
+    uiTitle: '🌼 Word Meadow',
+    playBtn: 'Play',
+    leaguesBtn: 'Leagues',
+    settingsBtn: 'Settings',
+    dictLangLabel: 'Dictionary language',
+    loadingDictBtn: 'Loading dictionary…',
+    loadingNote: '<span class="spinner"></span>Connecting dictionary…',
+    dictReadyNote: 'Dictionary: {n} words',
+    player: 'Player',
+    subtitle: 'Find as many words as you can in 60 seconds<br>the board always has at least {n} words',
+    leaguesTitle: 'Leagues',
+    participants: 'Participants',
+    you: 'You',
+    points: 'points',
+    ofN: 'of {n}',
+    connectHint: 'Connect letters into a word!',
+    pause: 'Paused',
+    rules: '🌿 Connect <b>neighboring</b> letters — horizontally, vertically or diagonally<br>✋ Press and drag finger or mouse through letters<br>✏️ Use each cell in a word <b>once</b><br>📖 Word is checked against the dictionary when you <b>release</b><br>🌼 The board always has at least <b>{n} words</b><br>⭐ Points: 3 letters — 1, 4 — 2, 5 — 3, 6 — 4',
+    continueBtn: 'Continue',
+    homeBtn: 'Home',
+    timeUp: "Time's up!",
+    scoreLabel: 'points · found {f} of {t}',
+    totalScoreLabel: 'Total score: {n}',
+    foundWords: 'Found words',
+    missedWords: 'Left on the board ({n})',
+    noWords: 'No words :(',
+    allFound: 'All words found! 🎉',
+    playAgain: 'Play again',
+    alreadyFound: 'Already found',
+    noSuchWord: 'No such word',
+    rivalPassed: '⚡ {name} passed you!',
+    promoted: '🏆 You advanced to {league}!',
+    scoreToNext: '{s} / {m} points to “{n}”',
+    maxLeague: '{s} points — highest league!',
+    leagues: ['Mint League', 'Lavender League', 'Peach League', 'Powder League', 'Rose League'],
+    botNames: ['Amy','Max','Lily','Jack','Emma','Ryan','Kate','Ben','Sophie','Sam','Mia','Tom','Lucy','Alex','Anna','Chris','Chloe','Dan','Grace','Leo','Nora','Owen','Ruby','Finn']
+  },
+  es: {
+    uiTitle: '🌼 Pradera de palabras',
+    playBtn: 'Jugar',
+    leaguesBtn: 'Ligas',
+    settingsBtn: 'Ajustes',
+    dictLangLabel: 'Idioma del diccionario',
+    loadingDictBtn: 'Cargando diccionario…',
+    loadingNote: '<span class="spinner"></span>Conectando el diccionario…',
+    dictReadyNote: 'Diccionario: {n} palabras',
+    player: 'Jugador',
+    subtitle: 'Encuentra todas las palabras que puedas en 60 segundos<br>en el tablero hay al menos {n} palabras',
+    leaguesTitle: 'Ligas',
+    participants: 'Participantes',
+    you: 'Tú',
+    points: 'puntos',
+    ofN: 'de {n}',
+    connectHint: '¡Conecta letras en una palabra!',
+    pause: 'Pausa',
+    rules: '🌿 Conecta letras <b>vecinas</b> — horizontal, vertical o diagonal<br>✋ Pulsa y arrastra el dedo o el ratón por las letras<br>✏️ Usa cada casilla <b>una sola vez</b><br>📖 La palabra se valida contra el diccionario al <b>soltar</b><br>🌼 En el tablero siempre hay al menos <b>{n} palabras</b><br>⭐ Puntos: 3 letras — 1, 4 — 2, 5 — 3, 6 — 4',
+    continueBtn: 'Continuar',
+    homeBtn: 'Inicio',
+    timeUp: '¡Se acabó el tiempo!',
+    scoreLabel: 'puntos · encontradas {f} de {t}',
+    totalScoreLabel: 'Puntuación total: {n}',
+    foundWords: 'Palabras encontradas',
+    missedWords: 'Quedaban en el tablero ({n})',
+    noWords: 'Ninguna palabra :(',
+    allFound: '¡Todas las palabras encontradas! 🎉',
+    playAgain: 'Jugar de nuevo',
+    alreadyFound: 'Ya encontrada',
+    noSuchWord: 'No existe esa palabra',
+    rivalPassed: '⚡ ¡{name} te superó!',
+    promoted: '🏆 ¡Ascendiste a {league}!',
+    scoreToNext: '{s} / {m} puntos para «{n}»',
+    maxLeague: '¡{s} puntos — liga máxima!',
+    leagues: ['Liga Menta', 'Liga Lavanda', 'Liga Melocotón', 'Liga Polvo', 'Liga Rosa'],
+    botNames: ['Ana','Max','Lucía','Diego','Sofía','Carlos','Elena','Juan','Carmen','Pablo','María','Pedro','Laura','Miguel','Rosa','Javier','Isabel','Raúl','Marta','Sergio','Sara','Álvaro','Nuria','Iván']
+  }
+};
+
+function t(key, params){
+  const lang = settings.language || 'ru';
+  const dict = I18N[lang] || I18N.ru;
+  let str = dict[key];
+  if (str === undefined) str = I18N.ru[key] !== undefined ? I18N.ru[key] : key;
+  if (Array.isArray(str)) return str;
+  if (params && typeof str === 'string'){
+    str = str.replace(/\{(\w+)\}/g, (_, k) => (params[k] !== undefined ? params[k] : '{' + k + '}'));
+  }
+  return str;
+}
+
+/* =========================================================
+   ЯЗЫКОВЫЕ ДАННЫЕ: алфавит, нормализация, веса, словари
+   ========================================================= */
+const RU_BUILTIN = `
+аптека арбуз базар балкон банан батон башня беда белка берег береза билет
+бокал борт брат брод букет булка буран буря бутон вагон вальс вата ведро
+веник венок вера вес ветер вечер взор вилка вино вишня влага воз воля
+ворон воск выбор вывод вызов газ газон гараж глина гора голос город горох
+гость грань гриб гроза груша губа гусь дача дверь двор дед дело день дети
+дно дождь доска дочь друг дрова дуб дух дым дыня еда ель жара забор завод
+закат замок запад запах заря заяц звон звук земля зерно зима зонт игра игла
+идея изба икра икона искра исток кабан какао камыш канал касса катер каюта
+кедр кино кисть класс клен клуб ключ ковер кожа коза койка комар конец
+копия кора корм коса кость кофе кошка кран краб круг крыло куб кубок кукла
+купол куст кухня лавка лампа лапа лента леска лев лед лиса лимон линия
+лист лодка ложка лось лужа лук луна лупа лыжи люди люк магия майка мак
+малина маска масло медаль мел мера место месяц мечта мир миска мода море
+мороз моряк мост мотив музей мука мусор муха мысль мышь мяч наряд невод
+неделя нога нож номер нора нос ночь обед образ обувь овца огонь огород
+огурец одеяло озеро окно олень орден оса осень ответ отдых отец охота очки
+пакет палец память парус паста паук певец пенал перец песня песок петля
+печь пила пилот пир пирог письмо пища пламя плата плащ племя плечо плита
+плод плот повар погода поезд поле полет полка полюс порог посол поток почва
+почта поэма право приз проба пруд путь пудра пуля пурга пух пушка пчела
+пятка пятно работа радар радио разум район рак ракета рамка рана ранец
+ребро ребус режим резец река рекорд ремень ремонт репка ресурс рецепт рис
+робот рог ров родник рой рокот роман ромб роса рот рота роща рубеж рубль
+ружье рука рулет рупор русло ручей ручка рыба рынок рысь рюмка сабля сад
+салат салют сани сапог сахар свеча свет свист седло сезон секрет село сенат
+сердце серия сетка сигнал сила сироп сито сказка скала сквер склад скот
+слава слеза слива слово слуга случай смесь смех смола смысл снег сноп собака
+собор совет сок сокол солнце соль сом сон сопка сор сосед сосна сотня спина
+спорт спуск среда ссора стадо стакан сталь станок ствол стена степь стиль
+стол стон стоп страж страна строй струя ступа стук стул судно судьба сук
+сумка суп сурок сустав сушка схема сцена сын сыр табун таз тайга тайна
+такси талия танец театр тепло тело тема тень терем тесто тигр тираж тишина
+ткань товар ток том топ точка трава треск тропа труба труд трюм туман
+тумба тупик тур туча туша тыква тыл уборка уголь угроза удача удар ужин
+узор указ улика улица улов урон урок устав утка утро утюг ухо уход ученик
+ущелье фазан факел факт фара ферма фильм финал финик фирма флаг флейта
+флот фокус форма форум фото фраза фрукт футбол футляр халат хвост химия
+хлеб холод холм хорек хозяин храм хребет хруст цапля царица цвет центр
+цифра чай чайка чайник час часы часть чаша чашка чек червь чердак череп
+черта честь чин число чугун чулан чудо шаг шапка шар шарф шахта шкаф шкура
+шланг шлем шляпа шнур шов шорох шоссе шпага шрифт штора штурм шум шутка щека
+щенок щетка щит щука экран экипаж эра этаж эфир эхо юбка юла юмор юноша
+юрист яблоко ягода ядро язык яйцо якорь яма ясень яхта ящик
+`;
+
+const EN_BUILTIN = `
+ace act add age ago aid aim air ale all and ant any ape apt arc are ark arm art ash ask ate awe axe aye
+bad bag ban bar bat bay bed bee beg bet bid big bin bit boa bog boil bold bolt bomb bond bone book boom boot bore born boss both bowl box boy brag bran brat brew brick bride brief bring brisk broad broke brown brush bug bump burn burst bus bush bust but buy
+cab cake call calm came camp cane cap car card care cart case cash cast cat cave cell cent chap chat chef chew chin chip chop cite city clam clap clash class claw clay clip clock clog close cloth cloud club clue coal coast coat code coin cold colt comb come cone cook cool cope copy cord core cork corn cost cot could count court cover cow cozy crab crack craft cram crank crash crate crawl crazy cream creek crew crib crime crisp crop cross crowd crown crude cruel crush cry cub cuff cup curb cure curl curse curve cut cycle
+dad daily dairy daisy dance dare dark dart dash data date dawn dead deaf deal dear debt deck deed deep deer delay deny desk dial dice diet dig dime dine dip dire dirt dish disk ditch dive dock dog doll dome done doom door dose dot dove down dozen draft drag drain drama drank draw dread dream dress dried drift drill drink drip drive drop drove drown drug drum dry duck dude due dull dump dusk dust duty dye
+each eager eagle ear early earn earth ease east easy eat edge edit eel egg eight elbow elder elect else emit empty end enemy enjoy enter entry equal era error escape essay even event ever every evil exact exam exit eye
+face fact fade fail fair fake fall fame fan fancy far fare farm fast fat fate fault favor fear feast fee feed feel feet fell felt fence fern fever few fiber field fierce fight file fill film find fine finger finish fire firm first fish fist fit five fix flag flake flame flash flat flavor flaw fleet flesh flight flip float flock floor flour flow flower flu fluid flush fly foam focus fog foil fold folk follow fond food fool foot force fork form fort forth fortune forward found four fox frame free freeze fresh fried friend frog from front frost frown fruit fry fuel full fun funny fur fury future
+gain game gap gas gate gather gave gear gem general gentle get ghost giant gift ginger girl give glad glance glass gleam glide global glory glove glow glue goal goat gold golf gone good goose gown grab grace grade grain grand grant grape graph grasp grass grave gray great greed green greet grew grid grief grill grim grind grip groan gross ground group grove grow guard guess guest guide guilt guitar gulf gum gun guy
+habit had hail hair half hall halt ham hammer hand handle hang happen happy hard harm harsh harvest hat hate haul have hawk hay head heal health heap hear heart heat heavy hedge heel height held hell hello helmet help hen hence herb herd here hero hers hide high hike hill hint hip hire hiss hit hobby hold hole holiday hollow holy home honest honey honor hood hook hope horn horse host hot hotel hour house hover huge hull human humble humor hunger hunt hurdle hurry hurt husband hut
+ice icon idea ideal idle ill image imagine impact imply import inch include income indeed index indoor infant inform ink inner input insect inside insight insist instead insult intend into invent invest invite iron island issue
+jacket jail jam jar jaw jazz jeans jelly jet jewel job join joint joke journal journey joy judge juice jump jungle junior just
+keen keep kettle key kick kid kind king kiss kit kitchen kite knee knife knit knob knock knot know
+lab label labor lack ladder lady lake lamb lamp land lane language lap large last late laugh launch law lawn lawyer lay layer lazy lead leaf leak lean leap learn lease leash least leave lecture left leg legal legend lemon lend length lens less lesson let letter level liberty library license lid lie life lift light like lily limb limit line link lion lip liquid list listen little live load loaf loan lobby local lock log logic lonely long look loop loose lord lose loss lost lot loud love low loyal luck lucky lump lunch lung luxury
+machine mad magic magnet maid mail main major make male mall manage mango manner many map marble march margin mark market marry mask mass master match mate matter maybe mayor meal mean measure meat medal media medicine medium meet melody melt member memory mention menu mercy merge merit merry mess message metal method middle might mild mile milk mill mind mine minimum minor mint minus minute mirror miss mist mistake mix model modern modest modify moist moment money monkey month mood moon moral more morning most mother motor mount mouse mouth move movie much mud mug muscle museum mushroom music must mutual mystery
+nail naked name narrow nation native natural nature navy near neat necessary neck need needle negative neighbor neither nephew nerve nest net never new news next nice niece night noble nobody nod noise none noon normal north nose note notice novel now nuclear number nurse nut
+oak obey object ocean odd offer office often oil okay old olive omit once one onion online only open opera opinion opposite option orange orbit order organ origin other ought ounce our out outer output outside oven over owe owl own owner oxygen
+pace pack page pain paint pair palace pale palm pan panel panic paper parade parcel parent park part party pass past pasta path patient pattern pause pave pay peace peach peak pear pearl peasant pedal peel pen pencil penny people pepper per perfect perform perhaps period permit person pet phase phone photo phrase piano pick picture pie piece pig pile pill pilot pin pinch pine pink pipe pitch pity pizza place plain plan plane planet plant plastic plate play please pledge plenty plot plug plum plunge plus pocket poem poet point polar pole police policy polish polite pool poor pop popular porch port pose position positive possible post pot potato pound pour powder power practice praise pray predict prefer prepare present press pretty prevent price pride prime print prior prison private prize problem process produce profit program progress project promise prompt proof proper propose protect proud prove provide public pull pulse pump punch punish pupil puppy purchase pure purple purpose purse push put puzzle
+quality quarter queen question quick quiet quilt quit quite quiz quote
+rabbit race rack radar radio rail rain raise rally random range rank rapid rare rate rather ratio raw reach react read ready real reason rebel recall receive recent recipe record recover red reduce refer reflect reform refuse regard region regret regular reject relate relax release relief rely remain remark remedy remind remote remove render renew rent repair repeat replace reply report request require rescue research reserve resist resort resource respect respond rest result retain retire return reveal review reward rhythm rib ribbon rice rich rid ride ridge rifle right rigid ring rinse rip ripe rise risk ritual rival river road roast rob robe rock rocket role roll roof room root rope rose rotate rough round route routine row royal rub rubber rude rug rule run rural rush rust
+sack sacred sad saddle safe sail saint salad salmon salt sample sand sandwich sandy sat satellite sauce sausage save saw say scale scan scare scarf scatter scene scent school science scissors scope score scout scrap scratch scream screen screw script scroll sea seal search season seat second secret section secure seed seek seem select self sell send senior sense sentence separate sequence series serious serve session settle several severe sew shade shadow shaft shake shall shame shape share shark sharp shave she sheep sheet shelf shell shelter shift shine ship shirt shock shoe shoot shop shore short shot should shoulder shout show shower shrimp shrink shrug shut shy sibling sick side siege sight sign signal silence silk silly silver similar simple since sing single sink sir sister sit site six size skate sketch ski skill skin skip skirt skull sky slab slack slam sleep sleeve slice slide slight slim slip slope slot slow small smart smell smile smoke smooth snack snake snap sneeze snow soap social society sock soft soil solar sold soldier sole solid solve some son song soon sorry sort soul sound soup source south space spare spark speak special speech speed spell spend sphere spice spider spike spin spine spiral spirit spit spite splash split spoil spoke sponge spoon sport spot spray spread spring spy square squeeze stable stack staff stage stair stake stale stalk stall stamp stand staple star stare start state station stay steady steak steal steam steel steep steer stem step stick stiff still sting stir stock stomach stone stood stool stop store storm story stove straight strain strand strange strap straw stream street stress stretch strict strike string strip stroke strong struck structure struggle stuck student study stuff stupid style subject submit subtle succeed such sudden suffer sugar suggest suit summer summit sun sung sunset sunshine super supply support suppose sure surface surprise surround survey survive suspect swallow swam swamp swap swear sweat sweep sweet swell swift swim swing switch sword symbol system
+table tackle tail tailor take tale talent talk tall tame tank tap tape target task taste tattoo taught tax tea teach team tear tease tech teeth tell temper temple tempt ten tender tennis tense tent term terrace terrible test text than thank that theater their them theme then theory there these they thick thief thin thing think third thirsty this thorn those though thought thread threat three threw throat throne through throw thumb thunder thus ticket tide tidy tie tiger tight tile till tilt timber time tiny tip tired tissue title toast today toe together toilet token toll tomato tomorrow tone tongue tonight too tool tooth top topic torch total touch tough tour tourist toward towel tower town toy trace track trade traffic trail train trait transfer trap trash travel tray treat tree trend trial tribe trick trigger trim trip trophy trouble truck true trunk trust truth try tube tuck tug tuition tunnel turkey turn turtle tutor twice twilight twin twist two type typical
+ugly ultimate umbrella unable uncle under understand unfair unfold unhappy uniform union unique unit unite universe unknown unless unlike unusual until up update upgrade upon upper upset urban urge urgent usage use useful useless usual utility
+vacation vacuum vague valid valley value van vanilla vanish variety various vast vault vegetable vehicle venture verb verdict verify verse version vertical very vessel veteran victim victory video view village vintage violate violence violet violin virtual virtue virus visible vision visit visual vital vitamin vivid vocabulary voice volume volunteer vote voyage
+wage wagon waist wait wake walk wall wallet wander want war ward warm warn wash waste watch water wave wax way weak wealth weapon wear weather weave web wedding wedge weed week weekend weigh weight weird welcome welfare well west wet whale what wheat wheel when where whether which while whip whisper whistle white who whole whom whose why wide widow width wife wild will win wind window wine wing wink winner winter wipe wire wisdom wise wish wit witch with within without witness wolf woman wonder wood wool word work world worm worry worse worst worth would wound wrap wreck wrist write wrong wrote
+yard yawn year yellow yes yesterday yet yield yoga yogurt you young your youth
+zeal zebra zero zone zoo
+`;
+
+const ES_BUILTIN = `
+abeja abierto abogado abrazo abrigo abrir abuelo abuso acabar acaso aceptar acento acero acertar actuar acuerdo acusar adelante ademas adentro adios admitir adoptar adorno adulto afecto afiche afuera agencia agenda agente agitar agotar agradar agua aguja agujero aire ajeno ajuste alambre alarma alba alcalde aldea alegre alejar alfombra alga alguien alguno alianza aliento alma almacen almeja almirante almohada alquilar alrededor altar alterar altura alzar amable amanecer amar amargo ambos amigo amistad amor amplio ancho anciano ancla andar anillo animo aniversario anoche antes antojo anuncio añadir apagar aparato apenas apetito apoyar aprender apretar aprobar apuesta apuro aquel aqui arancel araña arar arbol arco arder ardilla arena arma armario armonia aroma arpa arrancar arrastrar arreglar arriba arriesgar arrojar arroz arroyo arruga arte articulo artista asamblea ascender asegurar asiento asignar asilo asistir asno asombro aspecto aspero astilla astro asunto asustar atacar atajo atar atardecer atender atento aterrizar atleta atractivo atraer atras atravesar atreverse aumentar aunque autor avance avaro ave avellana aviso ayer ayuda azafran azote azucar azul
+babero bahia bailar bajar bajo bala balance balanza balcon balde balon banca banco banda bandera banquete bar barato barba barco barniz barra barrer barril barrio basar basura batalla bate batir baul beber bebida belleza bello bendito beneficio berenjena besar beso bestia biblioteca bicicleta bien bicho billete bingo blanco blando blusa bobo boca bocina boda bodega bofetada bola boleto bolsa bomba bombero bondad bonito bordo borrar bosque bota botella botin boton brasa brazo breve brillo brisa brotar bruja brujula brusco brutal bueno buey bufanda bulto buque burla burbuja burro busca buscar butaca buzon
+cabal caballo cabeza cable cabo cactus cada cadena caer cafe caida caja cajon cal calor calambre calcio caldo calidad caliente calma calle cama cambio camaron caminar camino camion camisa campo canal canasta cancelar cancion candado cansado cantar cantidad cantina caña caño caos capaz capital capitan capa captar cara caracter carbon carcel careta carga cargo caricia caridad cariño carne carpeta carrera carro carta casa casar cascada casco casero caspa castigo casual catalan catalogo catorce cautela cautivo cava cavar cazador cazar cazo cebolla ceder ceja celda celebrar celoso cementerio cena cenar ceniza centro cepillo cera cerca cerdo cerebro ceremonia cereza cerrar cerro cesar cesta cicatriz ciego cielo cien ciencia cima cinco cine cinta cintura circo circulo ciudad civil claridad clase clasico cliente clima clinica cobre cocina coco coche codigo codo cofre coger cohete cola colchon coleccion colegio colina colmena colocar color colorado columna combate comedor comedia comer comida comienzo comision como compacto compas complejo compra comun con concebir conceder concepto concierto concluir concha condado condena conducir conejo confiar confin conocer conquista consejo consentir conservar considerar consigo consolar constar consulta contacto contener contento contestar contexto contra contrario control convencer convenir conversar copa copia corazon corbata corona correr corral corregir correo corrido cortar corte cortina coser costa costumbre crecer credito creer crema cresta cristal cruz cuadro cual cualquier cuando cuarenta cuarto cuatro cubierta cubo cubrir cuello cuenta cuero cuerpo cuesta cueva cuidado culpa culto cumbre cumplir cuna cuota cuyo
+dama danza dañar dar datil dato de debajo deber debil debut decada decaer decidir decir decision declarar declive dedo defensa definir dejar deleite delgado delicia delito demora demas demasiado demonio dentro deporte deposito derecho derretir derribar derrota desayuno desastre descalzo descanso descarga descubrir desear deseo desfile desgracia deshacer desierto desliz desnudo desorden despacio despertar despierto despues destino destreza destruir detalle detener deuda dia diablo dibujo diccion diciembre diente dificil difunto digno dilema dinero dios diosa diploma disco discurso discutir diseñar diseño disfraz disfrutar disimular disolver distinto distraer diverso divino doble doce doler dolor domingo doncella donde don dorado dormir dorso dos dosis dote drama duda dudar dueño dulce duelo duende durazno durante duro
+ebanista echar edad edicion edificio editor educar efecto eficaz ego eje ejemplo ejercer ejercito elaborar eleccion elegir elemental elevar elogio elote ella ello embajada embarcar embudo emision emitir emocion empacar empezar emperador emplear empresa empujar enamorar encaje encanto encargar encender encerrar encima encontrar encuesta endeble enemigo energia enero enfadar enfasis enfermar enganchar engaño engañar enojo enorme enredo enriquecer ensayar enseguida enseñar entender entero entonces entrada entrar entre entregar enviar envidia episodio epoca equilibrio equipaje equipo equivocar erguir erizar ermita error escalera escalar escama escapar escasez escena esclavo escoba escoger escolta esconder escribir escuchar escudo escuela escultor ese esfuerzo eso espacio espalda espantar especial especie esperar espeso espia espiga espina espiral espiritu esponja esposa esqueleto esquina esta estacion estadio estado estallar estar estatua este estilo estiercol esto estorbo estrecho estrella estudiante estudiar estufa etapa eterno etica etnia europa evacuar evitar exacto examen exclamar excusa existir exito explicar explorar exponer expreso extra extraño extremo
+fabrica faccion facil factor faena faja falda falla fallecer falso falta fama familia famoso fantasia faro fase fatal fatiga favor fax febrero fecha felicidad feliz fenomeno feo feria feroz fertil festejar ficha fidelidad fiebre fiel fiera fiesta figura fijar fila filete filo filtro fin final finca fingir firmar flaco flan flauta flecha flor flota fluir foco fogon folleto fondo forma formal formato formidable fortuna forzar foto fracaso fragil frances franco frase fraude frenar frente frio fruta fuego fuente fuera fuerte fuerza fuga fumar funcionar funda fundar funeral furia fusil futbol futuro
+gafas galeria galleta galope gana ganado ganar gancho ganso garaje garbanzo garra garrote gas gasa gastar gato gemelo gemido general genero gente geografia geranio gerente gesto gigante gimnasio girar girasol globo gloria gloton gobernar gobierno gol golfo golpe goma gordo gorila gota gotear gozar gracia grado grafico gramo gran grande granja grasa grato gratis grave gripe gris grito grueso grúa grupo guante guapo guardar guardia guarida guerra guia guiar guisante guitarra gusto gustar
+haba haber habil habitacion hablar hacer hacia higo hielo hierba hierro higado higiene hijo hilo hongo hondura hondo honor hora horizonte hormiga hosco hospital hotel hoy hoz hueco huelga huella huerfano hueso huevo huida huir humano humo humor hundir huracan
+idea ideal identificar idioma idolo iglesia igual ileso ilimitado iluminar ilusion imagen imaginar iman imitar impaciente impedir imperio implicar imponer importar impresion impuesto impulsar incapaz incendio incentivo inclinar incluir incluso indicar indice indio individuo industria infancia infeliz inferior infiel infinito inflar influir informacion informe ingenio inglaterra ingles ingrato iniciar inicio inmenso inmune innato inquieto insistir inspirar instante instinto intentar interes interior interno invierno invitar ir iris ironia isla istmo
+jabon jamas jamon jardin jarra jaula jefe jerga jinete jornal joven joya jubilar judio juego juerga jueves juez jugada jugar jugo juguete juicio junco junio junta juntar jurado juramento justicia justo juventud
+labio labor lacio lado ladron lagartija lagrima laguna lamentar lana lanza largo laringe larva lastima lata latigo laurel lavabo lavar lazo leal leccion lectura leche lecho lector leer legion legumbre lejano lejos lengua lento leña leño lesion letra levadura levantar leve ley libertad librar libre libro licor lider lid liga ligero limitar limon limpiar lindo linea lino lirio lista listo literal litio litro llama llamar llano llave llegada llegar llenar lleno llevar llorar lluvia lomo lona lote loro losa loco lograr lomo lucero lucha luego lugar lujo luminoso luna luz
+maceta macho madera madre maduro maestro magia magnitud maiz majestad mal maldad malla mama mamifero mancha mandar mando manera manga mango manifestar mano mansion manta manzana mañana mapa maquina mar marco marcha marchar marea margen marido marina marino mariposa marron martes marzo mas masa mascara matar materia matiz maton mayo mayor mazorca mecha medalla media medico medida medio medir mejilla mejor melon memoria menor mensaje mente mentir menu mercado merengue merito mes mesa meter metodo metro mezcla miedo miel mientras miercoles miga mil milla millon mimbre mina mineral minero minimo ministro minuto miope mirar misa miseria mismo misterio mitad mito mixto moda modelo moderado modo moho molar molde moler molestar momento moneda monje mono montaña monte morado morder morir mosaico mosca mostrador mostrar motivo motor mover mozo muchacho mucho mudar mudo mueble muela muerte muestra mujer muleta multa mundo muñeca muro musica muslo mutuo muy
+nabo nacer nacion nada nadar nadie naipe nalga naranja nariz narrar natal natilla natural naufragio nave navegar necio negar negocio negro nene nervio nevar niebla nieto nieve niño nivel nitido noble noche nogal nombrar nombre nordeste norma norte nota notar noticia notorio novato novela noviembre nube nublado nudo nuera nuestro nueva nuevo nuez numero nunca nutria
+oasis obra obrero observar obstante obtener obvio ocasion occidente oceano ocio octubre ocultar ocupar ocurrir odiar oeste ofender oferta oficio ofrecer oido oir ojo ola oleaje oleo oler olfato olivo olla olmo olvidar ombligo once onda onza opcion opera opinar oprimir oracion orden ordenar oreja orfanato organismo orgullo origen orilla oro orquesta ortiga osadia oscuro oso otoño otro oveja ovillo ovulo
+pacto padecer padre pagar pagina pais paisaje paja pajaro palabra palacio paleta palma palo paloma pan pancarta pantalon panteon pañuelo papa papel paquete par para parada parar pared parir parque parrafo parte partir pasado pasaje pasar pasear pasillo paso pasta pastel pata patata patinar patio pato pavo payaso paz peaje peaton pecho pedazo pedir pegar peine pelicula peligro pelo peluca pena pendiente peninsula pensar penumbra peña peor pepino pequeña percibir perder perdon pereza perfeccion periodico permanecer permiso pero perro persona pesa pesar pesca pescado peso petroleo pez piadoso pico pie piedra piel pierna pieza pijama pila pillar pimienta pino pintar pintor pinza piojo pipa pirata piropo pisada piscina piso pista pistola pitillo pizarra placa plaga plan plano planta plata playa plaza plazo plato pleno plomo pluma plural pobre poco poder podio poema poesia poeta polaco policia politico polen pollo polo polvo polvora pomelo pompa poner por porcion portal portero porvenir posada poseer posible posicion postal postre potencia pozo precio precioso prefijo pregunta premio prenda prensa preso prestamo primavera primero primo princesa principio prisa privado probar problema proceso proeza profeta pronto propio prosa proteger provecho proyecto prudente prueba publico puchero pueblo puente puerta puerto pues puesto pulmon pulpo pulso puntilla punto punzada puñado pupila puro
+que quedar queja quemar querer queso quicio quieto quimica quinto quiosco quitar quiza
+rabia rabo racimo radar raiz rama ramo rana rapido raro rasgo raspar rato raton raya rayo razon reaccion real rebelde recado recaer recelo recibir recibo recio recoger recomendar reconocer recto recurso red redondo reducir referir reflejo reforma refran regalo regar region regir registro regla regocijo rehusar reina reino reir reja relacion relevo relieve religion reloj remache remar remate remedio remendar remitir remo remolino remoto rencor rendir renegar renglon renta reparto repente repetir reposo represa reptil reputacion requerir resaltar resbalar rescate reserva resina resistir resorte respeto respirar resplandor responder restar resto resumen retazo retener retirar reto retorno retraso retrato reunir revelar revisar revista rey rezar riachuelo ribete rico riesgo riña rincon rio riqueza risa risueño ritmo rival rizo robar robo roble roca roce rodar rodear rodeo rodilla roer rojo romano romper ronco ronda ropa ropero rosa rosca rostro roto rotura rozar rubio rubor rudo ruido ruina ruiseñor ruleta rumbo rumor ruta rutina
+sabado sabana sabor sabroso sacar saco sacudir sagrado sal sala salida salir salmon salon salto salud saludar salvar sandia sangre santo sarten sastre satira secar seco secretario secreto secta sed seda seguir seguida segun segundo segur seguro selecto selva sello semana sembrar semilla sencillo senda seno sensato sentido sentar sentencia sentimiento sentir señal señor separar sepia sepulcro sequia ser sereno serie seriedad sermon serpiente serrar servicio servir sesenta sesion seso seta setenta severo sexo sexto sidra siempre sien sierra siesta siete siglo signo siguiente silaba sillon silencio silvestre silla simbolo simiente simple sin sincero sindicato singular sino sinsonte sintoma sirviente siseo sitio situacion sobre sobresalir social sociedad socio soda sol sola solar soldado soledad soler solido soltar soluble sombra sombrero someter son sonaja sonar sondear soneto sonido sonoro sopa soplar soporte sorbo sordo sorpresa sortear sosten sotano suave subir subito sucio sudar sudor sueño suegra suela suelo suelto suerte suficiente sufrimiento sufrir sugerir sujeto sultan suma sumar suplemento supremo sur surcar surgir surtido suspiro susto susurro sutil sutura
+tabaco tabla tablero taco tajada tal talla tallar tamaño tambor tampoco tan tango tanque tapa tapia tapiz tapon tardar tarde tarea tarifa tarjeta tarro tarta taza te teatro techo tecla tecnica tejado tejer tela telefono telescopio tema temblar temer temor templo temporada temprano tenaz tender tenedor tener teniente tenis tenso teorico tercero terco terminar termino ternura terremoto terreno terron tesoro testigo textil texto tez tibio tiempo tienda tierno tierra tieso tigre tijera timbre timidez timon tinta tinte tio tipico tipo tira tirar tiro tirita titan titulo tiza toalla tobillo tocar tocino todavia tosco toldo tolerable tolva tomar tomate tonel tono tonto tope torcido torero tormenta tornar torno toro torpe torre torso torta tortuga tos toser total trabajador trabajar trabajo trabar traer trafico tragar trago traicion traidor tramite trampa tramo trance tranvia trapiche tras trasero tratar traves trazar trecho tregua tren trepar trino triple triste triunfo trofeo trompa trompo tronco trono tropa trotar truco trueno trueque tuberia tuerca tuerto tumba tumbar tunel turbio turista turno tutear tutor tuyo
+ubicar ulular ultimo ultra umbral ungir unico unidad unir universo uno untar uña urbanizar urdimbre urgencia urgir urgente urna usar uso usted util utopia uva
+vaca vaciar vacio vacuna vado vagar vagon valer valiente valioso valor valvula valla valle vano vapor varar variar varita varon vaso vasto vecino vector vedar vega vegetal vehiculo veinte vejiga vela velero veloz vellon vena venado vencedor vencer venda vender veneno venerar venir venta ventana ver verano veras verbo verdad verde verdugo vereda verguenza verificar verja verso vertice vestido veterano veto vez via viaje viajero vibrar vicio victima vida vidrio viejo viento viga vigia vil vino violin violar virgen virtud virus vision visita vislumbrar vispera vista vistazo vital viuda vivo volar volcan voltear volumen volver voraz voz vuelo vuelta vuestro vulgar
+yacer yate yegua yema yerno yeso yodo yunta
+zafiro zanja zapato zarza zona zorro zumbar zumbido zurdo
+`;
+
+const LANG_DATA = {
+  ru: {
+    code: 'ru', flag: '🇷🇺', native: 'Русский', label: 'Russian',
+    regex: /^[а-я]+$/,
+    normalize: w => w.toLowerCase().replace(/ё/g, 'е'),
+    weights: {
+      'о':11,'е':8.5,'а':8,'и':7.4,'н':6.7,'т':6.3,'с':5.5,'р':4.7,'в':4.5,'л':4.4,
+      'к':3.5,'м':3.2,'д':3,'п':2.8,'у':2.6,'я':2,'ы':1.9,'г':1.7,'з':1.7,'б':1.6,
+      'ч':1.4,'й':1.2,'х':1,'ж':0.9,'ш':0.7,'ю':0.6,'ц':0.5,'щ':0.4,'ф':0.3
+    },
+    sources: [
+      { url:'https://cdn.jsdelivr.net/gh/hermitdave/FrequencyWords@master/content/2018/ru/ru_50k.txt', format:'freq' },
+      { url:'https://raw.githubusercontent.com/hermitdave/FrequencyWords/master/content/2018/ru/ru_50k.txt', format:'freq' }
+    ],
+    builtin: RU_BUILTIN
+  },
+  en: {
+    code: 'en', flag: '🇬🇧', native: 'English', label: 'English',
+    regex: /^[a-z]+$/,
+    normalize: w => w.toLowerCase(),
+    weights: {
+      'e':12.7,'t':9.1,'a':8.2,'o':7.5,'i':7.0,'n':6.7,'s':6.3,'h':6.1,'r':6.0,
+      'd':4.3,'l':4.0,'c':2.8,'u':2.8,'m':2.4,'w':2.4,'f':2.2,'g':2.0,'y':2.0,
+      'p':1.9,'b':1.5,'v':1.0,'k':0.8,'j':0.15,'x':0.15,'q':0.1,'z':0.07
+    },
+    sources: [
+      { url:'https://cdn.jsdelivr.net/gh/hermitdave/FrequencyWords@master/content/2018/en/en_50k.txt', format:'freq' },
+      { url:'https://raw.githubusercontent.com/hermitdave/FrequencyWords/master/content/2018/en/en_50k.txt', format:'freq' }
+    ],
+    builtin: EN_BUILTIN
+  },
+  es: {
+    code: 'es', flag: '🇪🇸', native: 'Español', label: 'Spanish',
+    regex: /^[a-zñ]+$/,
+    normalize: w => w.toLowerCase()
+      .replace(/[áàäâ]/g,'a').replace(/[éèëê]/g,'e').replace(/[íìïî]/g,'i')
+      .replace(/[óòöô]/g,'o').replace(/[úùüû]/g,'u'),
+    weights: {
+      'e':13.7,'a':12.5,'o':8.7,'s':8.0,'r':6.9,'n':6.7,'i':6.2,'d':5.9,'l':5.0,
+      'c':4.6,'t':4.6,'u':3.9,'m':3.1,'p':2.5,'b':1.7,'g':1.1,'v':0.9,'y':0.9,
+      'q':0.7,'f':0.7,'h':0.7,'z':0.5,'j':0.4,'ñ':0.3,'x':0.2,'k':0.1,'w':0.05
+    },
+    sources: [
+      { url:'https://cdn.jsdelivr.net/gh/hermitdave/FrequencyWords@master/content/2018/es/es_50k.txt', format:'freq' },
+      { url:'https://raw.githubusercontent.com/hermitdave/FrequencyWords/master/content/2018/es/es_50k.txt', format:'freq' }
+    ],
+    builtin: ES_BUILTIN
+  }
+};
+
+const LANGUAGES = [LANG_DATA.ru, LANG_DATA.en, LANG_DATA.es];
+
+/* =========================================================
+   TRIE
+   ========================================================= */
+class Trie {
+  constructor(){ this.root = Object.create(null); }
+  add(word){
+    let node = this.root;
+    for (let i = 0; i < word.length; i++){
+      const ch = word[i];
+      let next = node[ch];
+      if (!next) { next = Object.create(null); node[ch] = next; }
+      node = next;
+    }
+    node.END = true;
+  }
+  has(word){
+    let node = this.root;
+    for (let i = 0; i < word.length; i++){
+      node = node[word[i]];
+      if (!node) return false;
+    }
+    return node.END === true;
+  }
+}
+
+/* =========================================================
+   ЗАГРУЗКА СЛОВАРЯ
+   ========================================================= */
+const MIN_WORD_LEN = 3;
+const MAX_WORD_LEN = 6;
+
+let DICTIONARY = new Set();
+let TRIE = null;
+let dictReady = false;
+let dictLoading = false;
+
+function getLangConfig(){ return LANG_DATA[settings.language] || LANG_DATA.ru; }
+
+function parseDictionaryText(text, format, langCfg){
+  const set = new Set();
+  const lines = text.split(/\r?\n/);
+  for (let i = 0; i < lines.length; i++){
+    let raw = lines[i];
+    if (!raw) continue;
+    if (format === 'freq'){
+      const sp = raw.indexOf(' ');
+      if (sp > 0) raw = raw.slice(0, sp);
+    }
+    const w = langCfg.normalize(raw.trim());
+    if (w.length < MIN_WORD_LEN || w.length > MAX_WORD_LEN) continue;
+    if (!langCfg.regex.test(w)) continue;
+    set.add(w);
+  }
+  return set;
+}
+
+async function fetchWithTimeout(url, ms){
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), ms);
+  try {
+    return await fetch(url, { signal: ctrl.signal, cache: 'force-cache', mode: 'cors' });
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+async function loadDictionary(){
+  if (dictLoading) return;
+  dictLoading = true;
+  dictReady = false;
+  DICTIONARY = new Set();
+  TRIE = null;
+
+  const langCfg = getLangConfig();
+  renderStart();
+
+  let words = null;
+  for (const src of langCfg.sources){
+    try {
+      const res = await fetchWithTimeout(src.url, 15000);
+      if (!res.ok) continue;
+      const text = await res.text();
+      const set = parseDictionaryText(text, src.format, langCfg);
+      if (set.size > 500){ words = set; break; }
+    } catch(_) { /* пробуем следующий источник */ }
+  }
+
+  if (!words){
+    words = new Set(
+      langCfg.builtin.split(/\s+/)
+        .map(langCfg.normalize)
+        .filter(w => w.length >= MIN_WORD_LEN && w.length <= MAX_WORD_LEN && langCfg.regex.test(w))
+    );
+  }
+
+  DICTIONARY = words;
+  TRIE = new Trie();
+  for (const w of words) TRIE.add(w);
+
+  dictReady = true;
+  dictLoading = false;
+
+  if (state.screen === 'start') renderStart();
+}
+
+async function setLanguage(code){
+  if (code === settings.language && dictReady) return;
+  settings.language = code;
+  saveSettings(settings);
+  rebuildLetterPool();
+  state.leaguePlayers = [];
+  overlay.classList.remove('show');
+  dictReady = false;
+  DICTIONARY = new Set();
+  TRIE = null;
+  if (state.screen === 'start') renderStart();
+  else if (state.screen === 'leagues') renderLeagues();
+  await loadDictionary();
+}
+
+/* =========================================================
+   КОНСТАНТЫ УРОВНЯ
+   ========================================================= */
+const SIZE = 6;
+const DURATION = 60;
+const MIN_WORDS_PER_LEVEL = 20;
+
+const DIRS = [];
+for (let dr = -1; dr <= 1; dr++)
+  for (let dc = -1; dc <= 1; dc++)
+    if (dr || dc) DIRS.push([dr, dc]);
+
+let LETTER_POOL = [];
+
+function rebuildLetterPool(){
+  const weights = getLangConfig().weights;
+  const pool = [];
+  for (const ch in weights){
+    const n = Math.max(1, Math.round(weights[ch] * 2));
+    for (let i = 0; i < n; i++) pool.push(ch);
+  }
+  LETTER_POOL = pool;
+}
+
+const randInt = n => Math.floor(Math.random() * n);
+const shuffle = a => {
+  const r = [...a];
+  for (let i = r.length - 1; i > 0; i--){
+    const j = randInt(i + 1);
+    [r[i], r[j]] = [r[j], r[i]];
+  }
+  return r;
+};
+const randomLetter = () => LETTER_POOL[randInt(LETTER_POOL.length)];
+const pointsFor = len => len <= 3 ? 1 : len === 4 ? 2 : len === 5 ? 3 : len === 6 ? 4 : len - 2;
+
+const LEAGUES = [
+  { emoji:'🌿', min:0,    max:500      },
+  { emoji:'💜', min:500,  max:1500     },
+  { emoji:'🍑', min:1500, max:3000     },
+  { emoji:'☁️', min:3000, max:5000     },
+  { emoji:'🌸', min:5000, max:Infinity },
+];
+function leagueFor(score){
+  for (let i = LEAGUES.length - 1; i >= 0; i--){
+    if (score >= LEAGUES[i].min) return i;
+  }
+  return 0;
+}
+function leagueName(idx){
+  const names = t('leagues');
+  return Array.isArray(names) ? names[idx] : names;
+}
+
+/* =========================================================
+   ГЕНЕРАЦИЯ УРОВНЯ
+   ========================================================= */
+function tryPlaceWord(grid, word){
+  for (let attempt = 0; attempt < 80; attempt++){
+    const sr = randInt(SIZE), sc = randInt(SIZE);
+    if (grid[sr][sc] !== null && grid[sr][sc] !== word[0]) continue;
+
+    const path = [[sr, sc]];
+    const used = new Set([sr * SIZE + sc]);
+    let ok = true;
+
+    for (let i = 1; i < word.length; i++){
+      const [lr, lc] = path[path.length - 1];
+      const opts = [];
+      for (let d = 0; d < DIRS.length; d++){
+        const nr = lr + DIRS[d][0], nc = lc + DIRS[d][1];
+        if (nr < 0 || nr >= SIZE || nc < 0 || nc >= SIZE) continue;
+        const idx = nr * SIZE + nc;
+        if (used.has(idx)) continue;
+        const g = grid[nr][nc];
+        if (g !== null && g !== word[i]) continue;
+        opts.push([nr, nc]);
+      }
+      if (!opts.length){ ok = false; break; }
+      const nx = opts[randInt(opts.length)];
+      path.push(nx);
+      used.add(nx[0] * SIZE + nx[1]);
+    }
+    if (ok && path.length === word.length) return path;
+  }
+  return null;
+}
+
+function buildCandidateGrid(placeablePool){
+  const grid = Array.from({ length: SIZE }, () => Array(SIZE).fill(null));
+  const target = 10 + randInt(6);
+  let placed = 0, guard = 0;
+
+  while (placed < target && guard < 400){
+    guard++;
+    const word = placeablePool[randInt(placeablePool.length)];
+    const path = tryPlaceWord(grid, word);
+    if (path){
+      for (let i = 0; i < path.length; i++) grid[path[i][0]][path[i][1]] = word[i];
+      placed++;
+    }
+  }
+
+  for (let r = 0; r < SIZE; r++)
+    for (let c = 0; c < SIZE; c++)
+      if (!grid[r][c]) grid[r][c] = randomLetter();
+
+  return grid;
+}
+
+function findAllWordsOnGrid(grid){
+  const words = new Set();
+  const used = new Uint8Array(SIZE * SIZE);
+
+  function dfs(r, c, prefix, node, len){
+    if (len >= MIN_WORD_LEN && node.END) words.add(prefix);
+    if (len >= MAX_WORD_LEN) return;
+    for (let d = 0; d < DIRS.length; d++){
+      const nr = r + DIRS[d][0], nc = c + DIRS[d][1];
+      if (nr < 0 || nr >= SIZE || nc < 0 || nc >= SIZE) continue;
+      const idx = nr * SIZE + nc;
+      if (used[idx]) continue;
+      const ch = grid[nr][nc];
+      const next = node[ch];
+      if (!next) continue;
+      used[idx] = 1;
+      dfs(nr, nc, prefix + ch, next, len + 1);
+      used[idx] = 0;
+    }
+  }
+
+  for (let r = 0; r < SIZE; r++){
+    for (let c = 0; c < SIZE; c++){
+      const ch = grid[r][c];
+      const node = TRIE.root[ch];
+      if (!node) continue;
+      used[r * SIZE + c] = 1;
+      dfs(r, c, ch, node, 1);
+      used[r * SIZE + c] = 0;
+    }
+  }
+  return words;
+}
+
+function generateLevel(){
+  const placeablePool = [...DICTIONARY].filter(w => w.length >= 4 && w.length <= MAX_WORD_LEN);
+  const pool = placeablePool.length ? placeablePool : [...DICTIONARY];
+
+  const MAX_ATTEMPTS = 40;
+  let best = null;
+
+  for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++){
+    const grid = buildCandidateGrid(pool);
+    const words = findAllWordsOnGrid(grid);
+    if (words.size >= MIN_WORDS_PER_LEVEL){
+      return { grid, words, attempts: attempt + 1 };
+    }
+    if (!best || words.size > best.words.size) best = { grid, words, attempts: attempt + 1 };
+  }
+  return best;
+}
+
+/* =========================================================
+   НАСТРОЙКИ / СТАТИСТИКА
+   ========================================================= */
+const DEFAULT_SETTINGS = { language: 'ru', sound: true };
+const DEFAULT_STATS = { totalScore: 0 };
+function loadSettings(){ try{ const r = localStorage.getItem('polyana_settings'); return r ? {...DEFAULT_SETTINGS, ...JSON.parse(r)} : {...DEFAULT_SETTINGS}; } catch(_){ return {...DEFAULT_SETTINGS}; } }
+function saveSettings(s){ try{ localStorage.setItem('polyana_settings', JSON.stringify(s)); } catch(_){} }
+function loadStats(){ try{ const r = localStorage.getItem('polyana_stats'); return r ? {...DEFAULT_STATS, ...JSON.parse(r)} : {...DEFAULT_STATS}; } catch(_){ return {...DEFAULT_STATS}; } }
+function saveStats(s){ try{ localStorage.setItem('polyana_stats', JSON.stringify(s)); } catch(_){} }
+
+let settings = loadSettings();
+let stats = loadStats();
+let soundEnabled = settings.sound !== false;
+if (!LANG_DATA[settings.language]) settings.language = 'ru';
+
+rebuildLetterPool();
+
+function generateLeaguePlayers(){
+  const names = shuffle([...t('botNames')]).slice(0, 8);
+  return names.map(n => ({ name: n, score: 15 + randInt(60) }));
+}
+
+const app = document.getElementById('app');
+const toastEl = document.getElementById('toast');
+const overlay = document.getElementById('overlay');
+
+let state = {
+  screen: 'start',
+  grid: [], levelWords: new Set(),
+  selected: [],
+  found: new Set(), score: 0, timeLeft: DURATION, timerId: null,
+  isDown: false, dragStarted: false, pendingStart: null,
+  startX: 0, startY: 0, startTime: 0,
+  rivalTimerId: null,
+  leaguePlayers: [],
+  leagueAnimationTimerId: null,
+  lastWholeSecond: DURATION,
+};
+
+function showToast(text, type){
+  toastEl.textContent = text;
+  toastEl.className = 'toast show ' + (type || 'good');
+  clearTimeout(showToast._t);
+  showToast._t = setTimeout(() => { toastEl.className = 'toast'; }, 1400);
+}
+
+/* =========================================================
+   ЭКРАН СТАРТА
+   ========================================================= */
+function renderStart(){
+  const leagueIdx = leagueFor(stats.totalScore);
+  const league = LEAGUES[leagueIdx];
+  const soundIcon = soundEnabled ? '🔊' : '🔇';
+
+  const playArea = dictReady
+    ? `<button class="play-btn" id="playBtn"><span class="icon">▶</span> ${t('playBtn')}</button>`
+    : `<div class="play-btn loading" id="playBtnLoading"><span class="icon">⏳</span> ${t('loadingDictBtn')}</div>`;
+
+  const loadNote = dictReady
+    ? `<div class="loading-note">${t('dictReadyNote', { n: DICTIONARY.size.toLocaleString(settings.language) })}</div>`
+    : `<div class="loading-note">${t('loadingNote')}</div>`;
+
+  app.innerHTML = `
+    <div class="screen">
+      <div class="screen-card">
+        <div class="profile">
+          <div class="avatar">${t('player')[0]}</div>
+          <div class="profile-info">
+            <div class="profile-name">${t('player')}</div>
+            <div class="profile-league">${league.emoji} ${leagueName(leagueIdx)} · ${stats.totalScore} ${t('points')}</div>
+          </div>
+          <div class="icon-row">
+            <button class="icon-btn ${soundEnabled ? '' : 'off'}" id="soundBtn" aria-label="Sound" title="Sound">${soundIcon}</button>
+            <button class="icon-btn" id="settingsBtn" aria-label="Settings" title="Settings">⚙</button>
+          </div>
+        </div>
+        <h1 class="screen-title">${t('uiTitle')}</h1>
+        <p class="screen-sub">${t('subtitle', { n: MIN_WORDS_PER_LEVEL })}</p>
+        ${playArea}
+        <button class="leagues-btn" id="leaguesBtn">
+          <span class="icon">🏆</span> ${t('leaguesBtn')}
+        </button>
+        ${loadNote}
+      </div>
+    </div>`;
+
+  const playBtn = document.getElementById('playBtn');
+  if (playBtn){
+    playBtn.onclick = () => { initAudio(); resumeAudio(); sfx.gameStart(); startGame(); };
+  }
+  document.getElementById('leaguesBtn').onclick = () => { state.screen = 'leagues'; renderLeagues(); };
+  document.getElementById('settingsBtn').onclick = () => { initAudio(); resumeAudio(); openSettings(); };
+  document.getElementById('soundBtn').onclick = toggleSound;
+}
+
+function toggleSound(){
+  soundEnabled = !soundEnabled;
+  settings.sound = soundEnabled;
+  saveSettings(settings);
+  document.querySelectorAll('#soundBtn').forEach(btn => {
+    btn.textContent = soundEnabled ? '🔊' : '🔇';
+    btn.classList.toggle('off', !soundEnabled);
+  });
+  if (soundEnabled){ initAudio(); resumeAudio(); sfx.tap(); }
+}
+
+/* =========================================================
+   ЛИГИ
+   ========================================================= */
+function renderLeagues(){
+  const leagueIdx = leagueFor(stats.totalScore);
+  const nextLeague = LEAGUES[leagueIdx + 1];
+  const progressText = nextLeague
+    ? t('scoreToNext', { s: stats.totalScore, m: nextLeague.min, n: leagueName(leagueIdx + 1) })
+    : t('maxLeague', { s: stats.totalScore });
+  if (!state.leaguePlayers.length) state.leaguePlayers = generateLeaguePlayers();
+  const me = { name: t('you'), score: stats.totalScore, isMe: true };
+  const allPlayers = [...state.leaguePlayers, me].sort((a, b) => b.score - a.score);
+
+  app.innerHTML = `
+    <div class="screen">
+      <div class="screen-card">
+        <div class="leagues-header">
+          <button class="back-btn" id="backBtn" aria-label="Back">←</button>
+          <h2 class="leagues-title">${t('leaguesTitle')}</h2>
+        </div>
+        <div class="current-league">
+          <div class="league-emoji">${LEAGUES[leagueIdx].emoji}</div>
+          <div class="league-info">
+            <div class="league-name">${leagueName(leagueIdx)}</div>
+            <div class="league-sub">${progressText}</div>
+          </div>
+        </div>
+        <div class="table-title">${t('participants')}</div>
+        <div class="league-table" id="leagueTable">
+          ${allPlayers.map((p, i) => `
+            <div class="league-row ${p.isMe ? 'me' : ''}" data-name="${p.name}">
+              <span class="league-pos">${i + 1}</span>
+              <span class="league-avatar">${p.name[0]}</span>
+              <span class="league-who">${p.isMe ? t('you') : p.name}</span>
+              <span class="league-score">${p.score}</span>
+            </div>`).join('')}
+        </div>
+      </div>
+    </div>`;
+
+  layoutLeagueRows();
+  document.getElementById('backBtn').onclick = () => { state.screen = 'start'; renderStart(); };
+  clearInterval(state.leagueAnimationTimerId);
+  state.leagueAnimationTimerId = setInterval(() => {
+    if (state.screen !== 'leagues'){ clearInterval(state.leagueAnimationTimerId); return; }
+    updateLeagueTable();
+  }, 14000);
+}
+
+function layoutLeagueRows(){
+  const rows = document.querySelectorAll('#leagueTable .league-row');
+  rows.forEach((row, i) => { row.style.transform = `translateY(${i * 58}px)`; });
+}
+
+function updateLeagueTable(){
+  if (state.screen !== 'leagues') return;
+  const table = document.getElementById('leagueTable');
+  if (!table) return;
+  state.leaguePlayers.forEach(p => { p.score = Math.max(5, p.score + (randInt(9) - 3)); });
+  const me = { name: t('you'), score: stats.totalScore, isMe: true };
+  const allPlayers = [...state.leaguePlayers, me].sort((a, b) => b.score - a.score);
+  const existing = {};
+  table.querySelectorAll('.league-row').forEach(r => { existing[r.dataset.name] = r; });
+  allPlayers.forEach((p, i) => {
+    const row = existing[p.name];
+    if (!row) return;
+    row.querySelector('.league-pos').textContent = i + 1;
+    row.querySelector('.league-score').textContent = p.score;
+    row.style.transform = `translateY(${i * 58}px)`;
+  });
+}
+
+/* =========================================================
+   ИГРОВОЙ ЭКРАН
+   ========================================================= */
+function renderPlaying(){
+  const soundIcon = soundEnabled ? '🔊' : '🔇';
+  app.innerHTML = `
+    <div class="game">
+      <div class="hud">
+        <div class="timer">
+          <svg viewBox="0 0 64 64">
+            <circle class="ring-bg" cx="32" cy="32" r="25"/>
+            <circle class="ring-fill" id="ringFill" cx="32" cy="32" r="25"/>
+          </svg>
+          <div class="timer-num" id="timerNum">${Math.ceil(state.timeLeft)}</div>
+        </div>
+        <div class="stat score">
+          <span class="stat-num" id="scoreNum">${state.score}</span>
+          <span class="stat-lbl">${t('points')}</span>
+        </div>
+        <div class="stat words">
+          <span class="stat-num" id="wordsNum">${state.found.size}</span>
+          <span class="stat-lbl" id="wordsTotal">${t('ofN', { n: state.levelWords.size })}</span>
+        </div>
+        <div class="hud-spacer"></div>
+        <button class="icon-btn-hud ${soundEnabled ? '' : 'off'}" id="soundBtn" aria-label="Sound">${soundIcon}</button>
+        <button class="icon-btn-hud" id="pauseBtn" aria-label="Pause">⏸</button>
+      </div>
+      <div class="board-panel">
+        <div class="grid" id="grid"></div>
+      </div>
+      <div class="word-display empty" id="wordDisplay">${t('connectHint')}</div>
+    </div>`;
+
+  renderGrid();
+  updateRing();
+  attachPointerHandlers();
+  document.getElementById('pauseBtn').onclick = pauseGame;
+  document.getElementById('soundBtn').onclick = toggleSound;
+}
+
+function renderGrid(){
+  const gridEl = document.getElementById('grid');
+  if (!gridEl) return;
+  gridEl.innerHTML = '';
+  for (let r = 0; r < SIZE; r++){
+    for (let c = 0; c < SIZE; c++){
+      const d = document.createElement('div');
+      d.className = 'cell';
+      d.dataset.row = r; d.dataset.col = c;
+      const span = document.createElement('span');
+      span.className = 'letter';
+      span.textContent = state.grid[r][c];
+      d.appendChild(span);
+      gridEl.appendChild(d);
+    }
+  }
+}
+
+function cellEl(r, c){ return document.querySelector(`.cell[data-row="${r}"][data-col="${c}"]`); }
+
+function updateSelectionVisual(){
+  document.querySelectorAll('.cell').forEach(el => el.classList.remove('sel'));
+  for (const [r, c] of state.selected){
+    const el = cellEl(r, c);
+    if (el) el.classList.add('sel');
+  }
+  updateWordDisplay();
+}
+
+function updateWordDisplay(){
+  const el = document.getElementById('wordDisplay');
+  if (!el) return;
+  if (!state.selected.length){
+    el.classList.add('empty');
+    el.textContent = t('connectHint');
+  } else {
+    el.classList.remove('empty');
+    el.textContent = state.selected.map(([r, c]) => state.grid[r][c]).join('').toUpperCase();
+  }
+}
+
+function updateHUD(){
+  const s = document.getElementById('scoreNum');
+  const w = document.getElementById('wordsNum');
+  const t_ = document.getElementById('timerNum');
+  if (s) s.textContent = state.score;
+  if (w) w.textContent = state.found.size;
+  if (t_) t_.textContent = Math.ceil(state.timeLeft);
+  updateRing();
+}
+
+function updateRing(){
+  const ring = document.getElementById('ringFill');
+  if (!ring) return;
+  const pct = state.timeLeft / DURATION;
+  ring.style.strokeDashoffset = (157 * (1 - pct)).toFixed(2);
+  ring.style.stroke = pct <= .2 ? '#e08a8a' : pct <= .5 ? '#e0b878' : 'var(--mint-deep)';
+}
+
+/* =========================================================
+   СТАРТ / ТАЙМЕР
+   ========================================================= */
+function startGame(){
+  if (!dictReady) return;
+
+  const level = generateLevel();
+  state.grid = level.grid;
+  state.levelWords = level.words;
+  state.selected = [];
+  state.found = new Set();
+  state.score = 0;
+  state.timeLeft = DURATION;
+  state.isDown = false;
+  state.dragStarted = false;
+  state.pendingStart = null;
+  state.screen = 'playing';
+  state.lastWholeSecond = DURATION;
+  if (!state.leaguePlayers.length) state.leaguePlayers = generateLeaguePlayers();
+  clearInterval(state.timerId);
+  clearTimeout(state.rivalTimerId);
+
+  renderPlaying();
+  scheduleRivalPopup();
+
+  const t0 = performance.now();
+  state.timerId = setInterval(() => {
+    if (state.screen !== 'playing') return;
+    state.timeLeft = Math.max(0, DURATION - (performance.now() - t0) / 1000);
+    const whole = Math.ceil(state.timeLeft);
+    if (whole !== state.lastWholeSecond){
+      state.lastWholeSecond = whole;
+      if (whole <= 5 && whole > 0) sfx.tick();
+    }
+    updateHUD();
+    if (state.timeLeft <= 0) endGame();
+  }, 100);
+}
+
+function scheduleRivalPopup(){
+  clearTimeout(state.rivalTimerId);
+  state.rivalTimerId = setTimeout(() => {
+    if (state.screen !== 'playing') return;
+    if (!state.leaguePlayers.length) state.leaguePlayers = generateLeaguePlayers();
+    const rival = state.leaguePlayers[randInt(state.leaguePlayers.length)];
+    showToast(t('rivalPassed', { name: rival.name }), 'warn');
+    scheduleRivalPopup();
+  }, 12000 + randInt(10000));
+}
+
+function pauseGame(){
+  if (state.screen !== 'playing') return;
+  state.screen = 'paused';
+  state.selected = [];
+  updateSelectionVisual();
+  clearInterval(state.timerId);
+  clearTimeout(state.rivalTimerId);
+  openPauseMenu();
+}
+
+function resumeGame(){
+  overlay.classList.remove('show');
+  state.screen = 'playing';
+  const startLeft = state.timeLeft;
+  state.lastWholeSecond = Math.ceil(startLeft);
+  const t0 = performance.now();
+  clearInterval(state.timerId);
+  state.timerId = setInterval(() => {
+    if (state.screen !== 'playing') return;
+    state.timeLeft = Math.max(0, startLeft - (performance.now() - t0) / 1000);
+    const whole = Math.ceil(state.timeLeft);
+    if (whole !== state.lastWholeSecond){
+      state.lastWholeSecond = whole;
+      if (whole <= 5 && whole > 0) sfx.tick();
+    }
+    updateHUD();
+    if (state.timeLeft <= 0) endGame();
+  }, 100);
+  scheduleRivalPopup();
+}
+
+function openPauseMenu(){
+  overlay.innerHTML = `
+    <div class="modal">
+      <h2 class="modal-title">${t('pause')}</h2>
+      <div class="rules-box">${t('rules', { n: MIN_WORDS_PER_LEVEL })}</div>
+      <button class="btn-primary" id="resumeBtn">
+        <span class="icon">▶</span> ${t('continueBtn')}
+      </button>
+      <div class="btn-row">
+        <button class="btn-secondary" id="pauseHomeBtn">
+          <span class="icon">🏠</span> ${t('homeBtn')}
+        </button>
+      </div>
+    </div>`;
+  overlay.classList.add('show');
+  document.getElementById('resumeBtn').onclick = resumeGame;
+  document.getElementById('pauseHomeBtn').onclick = () => {
+    overlay.classList.remove('show');
+    clearInterval(state.timerId);
+    clearTimeout(state.rivalTimerId);
+    state.screen = 'start';
+    renderStart();
+  };
+}
+
+/* =========================================================
+   ФИНАЛ
+   ========================================================= */
+function endGame(){
+  clearInterval(state.timerId);
+  clearTimeout(state.rivalTimerId);
+  state.timerId = null;
+  state.screen = 'finished';
+  state.selected = [];
+  sfx.gameEnd();
+
+  const prevLeagueIdx = leagueFor(stats.totalScore);
+  stats.totalScore += state.score;
+  const newLeagueIdx = leagueFor(stats.totalScore);
+  saveStats(stats);
+
+  if (newLeagueIdx > prevLeagueIdx){
+    setTimeout(() => {
+      showToast(t('promoted', { league: leagueName(newLeagueIdx) }), 'good');
+      sfx.promotion();
+    }, 700);
+  }
+  renderFinish();
+}
+
+function renderFinish(){
+  const found = [...state.found].sort((a, b) => b.length - a.length || a.localeCompare(b));
+  const missed = [...state.levelWords].filter(w => !state.found.has(w))
+    .sort((a, b) => b.length - a.length || a.localeCompare(b));
+
+  const foundHTML = found.length
+    ? found.map(w => `<span class="word-chip">${w}</span>`).join('')
+    : `<span style="color:var(--ink-mute);font-size:13px;font-style:italic">${t('noWords')}</span>`;
+
+  const missedHTML = missed.length
+    ? missed.slice(0, 20).map(w => `<span class="word-chip missed">${w}</span>`).join('')
+      + (missed.length > 20 ? '<span class="word-chip missed">…</span>' : '')
+    : `<span style="color:var(--mint-deep);font-size:13px;font-weight:800">${t('allFound')}</span>`;
+
+  const leagueIdx = leagueFor(stats.totalScore);
+
+  app.innerHTML = `
+    <div class="screen">
+      <div class="screen-card">
+        <h2 class="screen-title">${t('timeUp')}</h2>
+        <div class="big-score">${state.score}</div>
+        <div class="score-label">${t('scoreLabel', { f: state.found.size, t: state.levelWords.size })}</div>
+        <div class="current-league" style="margin:0 0 4px">
+          <div class="league-emoji">${LEAGUES[leagueIdx].emoji}</div>
+          <div class="league-info">
+            <div class="league-name">${leagueName(leagueIdx)}</div>
+            <div class="league-sub">${t('totalScoreLabel', { n: stats.totalScore })}</div>
+          </div>
+        </div>
+        <div class="word-group">
+          <h3>${t('foundWords')}</h3>
+          <div class="word-list">${foundHTML}</div>
+        </div>
+        <div class="word-group">
+          <h3>${t('missedWords', { n: missed.length })}</h3>
+          <div class="word-list">${missedHTML}</div>
+        </div>
+        <button class="btn-primary" id="againBtn" style="margin-top:22px">
+          <span class="icon">🔄</span> ${t('playAgain')}
+        </button>
+        <div class="btn-row">
+          <button class="btn-secondary" id="homeBtn">
+            <span class="icon">🏠</span> ${t('homeBtn')}
+          </button>
+          <button class="btn-secondary" id="leaguesFromFinishBtn">
+            <span class="icon">🏆</span> ${t('leaguesBtn')}
+          </button>
+        </div>
+      </div>
+    </div>`;
+
+  document.getElementById('againBtn').onclick = () => { initAudio(); resumeAudio(); sfx.gameStart(); startGame(); };
+  document.getElementById('homeBtn').onclick = () => { state.screen = 'start'; renderStart(); };
+  document.getElementById('leaguesFromFinishBtn').onclick = () => { state.screen = 'leagues'; renderLeagues(); };
+}
+
+/* =========================================================
+   ВВОД: ЖЕСТ / МЫШЬ
+   ========================================================= */
+let gridListenerAttached = false;
+function attachPointerHandlers(){
+  const gridEl = document.getElementById('grid');
+  if (!gridEl) return;
+  gridEl.addEventListener('pointerdown', onPointerDown);
+  gridEl.addEventListener('pointermove', onPointerMove);
+  gridEl.addEventListener('pointercancel', onPointerUp);
+  gridEl.addEventListener('contextmenu', e => e.preventDefault());
+  if (!gridListenerAttached){
+    window.addEventListener('pointerup', onPointerUp);
+    gridListenerAttached = true;
+  }
+}
+
+function onPointerDown(e){
+  if (state.screen !== 'playing') return;
+  const cell = e.target.closest('.cell');
+  if (!cell) return;
+  e.preventDefault();
+  initAudio(); resumeAudio();
+  state.pendingStart = { row: Number(cell.dataset.row), col: Number(cell.dataset.col) };
+  state.startX = e.clientX;
+  state.startY = e.clientY;
+  state.startTime = Date.now();
+  state.isDown = true;
+  state.dragStarted = false;
+  try { e.currentTarget.setPointerCapture(e.pointerId); } catch(_){}
+}
+
+function onPointerMove(e){
+  if (!state.isDown || state.screen !== 'playing') return;
+  if (!state.dragStarted){
+    const dx = e.clientX - state.startX;
+    const dy = e.clientY - state.startY;
+    const moved = Math.sqrt(dx * dx + dy * dy) > 4;
+    const timePassed = Date.now() - state.startTime > 80;
+    if (!moved && !timePassed) return;
+    state.dragStarted = true;
+    if (state.pendingStart){
+      state.selected = [[state.pendingStart.row, state.pendingStart.col]];
+      updateSelectionVisual();
+      sfx.tap();
+    }
+  }
+  const el = document.elementFromPoint(e.clientX, e.clientY);
+  const cell = el && el.closest ? el.closest('.cell') : null;
+  if (!cell) return;
+  const row = Number(cell.dataset.row);
+  const col = Number(cell.dataset.col);
+  if (Number.isNaN(row) || Number.isNaN(col)) return;
+  handleCellMove(row, col);
+}
+
+function handleCellMove(row, col){
+  const sel = state.selected;
+  if (!sel.length) return;
+  if (sel.length >= MAX_WORD_LEN) return;
+
+  const [lastR, lastC] = sel[sel.length - 1];
+  if (lastR === row && lastC === col) return;
+
+  if (sel.length >= 2){
+    const [pr, pc] = sel[sel.length - 2];
+    if (pr === row && pc === col){
+      sel.pop();
+      updateSelectionVisual();
+      sfx.untap();
+      return;
+    }
+  }
+  if (sel.some(([r, c]) => r === row && c === col)) return;
+  if (Math.abs(lastR - row) > 1 || Math.abs(lastC - col) > 1) return;
+
+  sel.push([row, col]);
+  updateSelectionVisual();
+  sfx.tap();
+}
+
+function onPointerUp(){
+  if (!state.isDown) return;
+  state.isDown = false;
+  if (state.dragStarted && state.selected.length >= MIN_WORD_LEN && state.screen === 'playing'){
+    submitWord();
+  } else {
+    state.selected = [];
+    updateSelectionVisual();
+  }
+  state.dragStarted = false;
+  state.pendingStart = null;
+}
+
+/* =========================================================
+   ПРОВЕРКА СЛОВА ПО СЛОВАРЮ
+   ========================================================= */
+function submitWord(){
+  const sel = state.selected;
+  const langCfg = getLangConfig();
+  const word = langCfg.normalize(sel.map(([r, c]) => state.grid[r][c]).join(''));
+  const pathCopy = [...sel];
+  state.selected = [];
+  updateSelectionVisual();
+
+  if (state.found.has(word)){
+    showToast(t('alreadyFound'), 'warn');
+    sfx.already();
+    flashCells(pathCopy, 'shake');
+    return;
+  }
+
+  const inDictionary = TRIE ? TRIE.has(word) : DICTIONARY.has(word);
+  if (!inDictionary){
+    showToast(t('noSuchWord'), 'bad');
+    sfx.error();
+    flashCells(pathCopy, 'shake');
+    return;
+  }
+
+  if (!state.levelWords.has(word)){
+    state.levelWords.add(word);
+    const totalEl = document.getElementById('wordsTotal');
+    if (totalEl) totalEl.textContent = t('ofN', { n: state.levelWords.size });
+  }
+
+  const pts = pointsFor(word.length);
+  state.score += pts;
+  state.found.add(word);
+  showToast(`+${pts}  ${word.toUpperCase()}`, 'good');
+  sfx.success();
+  flashCells(pathCopy, 'ok');
+  updateHUD();
+}
+
+function flashCells(path, type){
+  path.forEach(([r, c]) => {
+    const el = cellEl(r, c);
+    if (!el) return;
+    el.classList.add(type);
+    setTimeout(() => el.classList.remove(type), 400);
+  });
+}
+
+/* =========================================================
+   НАСТРОЙКИ (только выбор языка — без упоминания словаря)
+   ========================================================= */
+function openSettings(){
+  overlay.innerHTML = `
+    <div class="settings-panel">
+      <div class="settings-header">
+        <h2 class="settings-title">${t('settingsBtn')}</h2>
+        <button class="close-btn" id="closeSettings">✕</button>
+      </div>
+      <div class="lang-group">
+        <div class="lang-label">${t('dictLangLabel')}</div>
+        ${LANGUAGES.map(l => `
+          <div class="lang-option ${settings.language === l.code ? 'active' : ''}" data-lang="${l.code}">
+            <div class="lang-flag">${l.flag}</div>
+            <div class="lang-text">
+              <span class="lang-native">${l.native}</span>
+              <span class="lang-code">${l.label}</span>
+            </div>
+            <div class="lang-check"></div>
+          </div>`).join('')}
+      </div>
+    </div>`;
+
+  overlay.classList.add('show');
+  document.getElementById('closeSettings').onclick = () => overlay.classList.remove('show');
+  overlay.onclick = (e) => { if (e.target === overlay) overlay.classList.remove('show'); };
+  overlay.querySelectorAll('.lang-option').forEach(opt => {
+    opt.onclick = () => {
+      const code = opt.dataset.lang;
+      if (code === settings.language) return;
+      sfx.tap();
+      setLanguage(code);
+    };
+  });
+}
+
+/* =========================================================
+   КЛАВИАТУРА
+   ========================================================= */
+window.addEventListener('keydown', e => {
+  if (state.screen !== 'playing') return;
+  if (e.key === 'Escape'){ state.selected = []; updateSelectionVisual(); }
+  else if (e.key === 'Backspace'){ if (state.selected.length){ state.selected.pop(); updateSelectionVisual(); sfx.untap(); } }
+  else if (e.key === 'Enter'){ if (state.selected.length >= MIN_WORD_LEN) submitWord(); }
+});
+
+/* =========================================================
+   СТАРТ
+   ========================================================= */
+renderStart();
+loadDictionary();
+</script>
+</body>
+</html>
